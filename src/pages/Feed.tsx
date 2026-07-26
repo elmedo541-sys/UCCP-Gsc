@@ -11,6 +11,11 @@ import {
   Copy, Check, ExternalLink, LogIn,
 } from 'lucide-react';
 import ChatSupportWidget from '@/components/ChatSupportWidget';
+import UserMenu from '@/components/UserMenu';
+import WelcomeBanner from '@/components/WelcomeBanner';
+import ProfileNudge from '@/components/ProfileNudge';
+import NotificationBell from '@/components/NotificationBell';
+import MobileNavBar from '@/components/MobileNavBar';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface PostRow {
@@ -360,7 +365,9 @@ export default function Feed() {
   const [showBirthdayModal, setShowBirthdayModal] = useState(false);
   const [birthdayName, setBirthdayName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [userProfile, setUserProfile] = useState<{ full_name: string; profile_picture: string | null } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; first_name: string; profile_picture: string | null } | null>(null);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
   /* ── No redirect — allow read-only view for non-logged-in users ── */
 
@@ -370,11 +377,20 @@ export default function Feed() {
     const load = async () => {
       const { data } = await supabase
         .from('people')
-        .select('full_name, profile_picture, date_of_birth, first_name')
+        .select('full_name, profile_picture, date_of_birth, first_name, phone')
         .eq('uuid', personId)
         .maybeSingle();
       if (!data) return;
-      setUserProfile({ full_name: data.full_name ?? 'Me', profile_picture: data.profile_picture ?? null });
+      setUserProfile({
+        full_name: data.full_name ?? 'Me',
+        first_name: data.first_name ?? data.full_name?.split(' ')[0] ?? 'Friend',
+        profile_picture: data.profile_picture ?? null,
+      });
+
+      const missing: string[] = [];
+      if (!data.profile_picture) missing.push('photo');
+      if (!data.phone) missing.push('phone number');
+      setMissingFields(missing);
 
       // Birthday check
       const dob: string | null = data.date_of_birth;
@@ -745,12 +761,28 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                 <Icon className="w-4 h-4" />
               </button>
             ))}
+            {isLoggedIn && personId && <NotificationBell personId={personId} />}
+            {isLoggedIn && userProfile ? (
+              <UserMenu name={userProfile.full_name} picture={userProfile.profile_picture} />
+            ) : !isLoggedIn && (
+              <Button size="sm" onClick={() => navigate('/user/login')} className="rounded-full gap-1.5 ml-1">
+                <LogIn className="w-3.5 h-3.5" /> Log in
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Feed */}
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24 md:pb-6">
+
+        {isLoggedIn && personId && userProfile && (
+          <WelcomeBanner personId={personId} firstName={userProfile.first_name} />
+        )}
+
+        {isLoggedIn && !nudgeDismissed && (
+          <ProfileNudge missingFields={missingFields} onDismiss={() => setNudgeDismissed(true)} />
+        )}
 
         {/* Create Post — logged in users only */}
         {isLoggedIn ? (
@@ -851,6 +883,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
       </div>
 
       <ChatSupportWidget />
+      <MobileNavBar />
     </div>
   );
 }

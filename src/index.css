@@ -186,3 +186,5 @@ body,
 .animate-birthday-bounce { animation: birthday-bounce 1.2s ease-in-out infinite; }
 .animate-confetti-fall   { animation: confetti-fall linear infinite; }
 
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
