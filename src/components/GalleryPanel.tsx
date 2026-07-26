@@ -371,6 +371,132 @@ export default function GalleryPanel({
         </DialogContent>
       </Dialog>
 
+      {/* ── Media Grid ── */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+          <ImageIcon className="w-10 h-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">No media yet in this category.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {filtered.map((item, idx) => {
+            const tab = TAB_MAP[item.organization];
+            return (
+              <Card
+                key={item.id}
+                onClick={() => setLightboxIdx(idx)}
+                className="group relative aspect-square overflow-hidden cursor-pointer border-border p-0"
+              >
+                {item.file_type === 'video' ? (
+                  <VideoThumb url={item.file_url} />
+                ) : (
+                  <img
+                    src={item.file_url}
+                    alt={item.title || 'Gallery media'}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  />
+                )}
+
+                {/* Organization badge */}
+                {tab && (
+                  <span className={`absolute top-1.5 left-1.5 text-[10px] px-1.5 py-0.5 rounded-full text-white ${tab.color}`}>
+                    {tab.label}
+                  </span>
+                )}
+
+                {/* Caption overlay */}
+                {item.title && (
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pt-4 pb-1.5">
+                    <p className="text-white text-[11px] font-medium line-clamp-1">{item.title}</p>
+                  </div>
+                )}
+
+                {/* Delete button */}
+                {canDelete && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 hover:bg-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-white" />
+                  </button>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Lightbox ── */}
+      <Dialog open={lightboxIdx !== null} onOpenChange={(open) => !open && setLightboxIdx(null)}>
+        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black border-none">
+          {lightboxItem && (
+            <div className="relative">
+              <button
+                onClick={() => setLightboxIdx(null)}
+                className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+
+              {filtered.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setLightboxIdx((lightboxIdx! - 1 + filtered.length) % filtered.length)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-white" />
+                  </button>
+                  <button
+                    onClick={() => setLightboxIdx((lightboxIdx! + 1) % filtered.length)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center"
+                  >
+                    <ChevronRight className="w-5 h-5 text-white" />
+                  </button>
+                </>
+              )}
+
+              <div className="w-full max-h-[75vh] flex items-center justify-center bg-black">
+                {lightboxItem.file_type === 'video' ? (
+                  <video src={lightboxItem.file_url} controls autoPlay className="max-w-full max-h-[75vh]" />
+                ) : (
+                  <img src={lightboxItem.file_url} alt={lightboxItem.title || ''} className="max-w-full max-h-[75vh] object-contain" />
+                )}
+              </div>
+
+              <div className="p-4 bg-background">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    {lightboxItem.title && <p className="font-semibold text-sm truncate">{lightboxItem.title}</p>}
+                    {lightboxItem.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{lightboxItem.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1.5 text-[11px] text-muted-foreground">
+                      {lightboxItem.uploaded_by && <span>By {lightboxItem.uploaded_by}</span>}
+                      <span>{new Date(lightboxItem.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    </div>
+                  </div>
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive hover:text-destructive flex-shrink-0"
+                      onClick={() => handleDelete(lightboxItem)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
