@@ -1,107 +1,122 @@
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import UserLogin from "./pages/UserLogin";
-import ForgotPassword from "./pages/ForgotPassword";
-import UserProfile from "./pages/UserProfile";
-import Feed from "./pages/Feed";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import HomepageImagesManager from "./pages/HomepageImagesManager";
-import AdminManagement from "./pages/AdminManagement";
-import Presentation from "./pages/Presentation";
-import MediaGallery from "./pages/MediaGallery";
-import Events from "./pages/Events";
-import MemberDirectory from "./pages/MemberDirectory";
-import PrayerRequests from "./pages/PrayerRequests";
-import AdminEvents from "./pages/AdminEvents";
-import NotFound from "./pages/NotFound";
+import { lazy, Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
+
+// Lazy-load every route so the browser only downloads the code for the
+// page the visitor is actually on, instead of one giant bundle up front.
+const Home = lazy(() => import("./pages/Home"));
+const Register = lazy(() => import("./pages/Register"));
+const UserLogin = lazy(() => import("./pages/UserLogin"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Feed = lazy(() => import("./pages/Feed"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const HomepageImagesManager = lazy(() => import("./pages/HomepageImagesManager"));
+const AdminManagement = lazy(() => import("./pages/AdminManagement"));
+const Presentation = lazy(() => import("./pages/Presentation"));
+const MediaGallery = lazy(() => import("./pages/MediaGallery"));
+const Events = lazy(() => import("./pages/Events"));
+const MemberDirectory = lazy(() => import("./pages/MemberDirectory"));
+const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
+const AdminEvents = lazy(() => import("./pages/AdminEvents"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Wraps a lazy page in Suspense with a lightweight fallback so navigating
+// between routes shows a quick spinner instead of a blank white screen.
+function withSuspense(Component: React.LazyExoticComponent<() => JSX.Element>) {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Component />
+    </Suspense>
+  );
+}
 
 export const routers = [
     {
       path: "/",
       name: 'home',
-      element: <Home />,
+      element: withSuspense(Home),
     },
     {
       path: "/register",
       name: 'register',
-      element: <Register />,
+      element: withSuspense(Register),
     },
     {
       path: "/user/login",
       name: 'user-login',
-      element: <UserLogin />,
+      element: withSuspense(UserLogin),
     },
     {
       path: "/user/forgot-password",
       name: 'forgot-password',
-      element: <ForgotPassword />,
+      element: withSuspense(ForgotPassword),
     },
     {
       path: "/user/profile",
       name: 'user-profile',
-      element: <UserProfile />,
+      element: withSuspense(UserProfile),
     },
     {
       path: "/feed",
       name: 'feed',
-      element: <Feed />,
+      element: withSuspense(Feed),
     },
     {
       path: "/admin/login",
       name: 'admin-login',
-      element: <AdminLogin />,
+      element: withSuspense(AdminLogin),
     },
     {
       path: "/admin/dashboard",
       name: 'admin-dashboard',
-      element: <AdminDashboard />,
+      element: withSuspense(AdminDashboard),
     },
     {
       path: "/admin/homepage-images",
       name: 'homepage-images-manager',
-      element: <HomepageImagesManager />,
+      element: withSuspense(HomepageImagesManager),
     },
     {
       path: "/admin/manage-admins",
       name: 'admin-management',
-      element: <AdminManagement />,
+      element: withSuspense(AdminManagement),
     },
     {
       path: "/presentation",
       name: 'presentation',
-      element: <Presentation />,
+      element: withSuspense(Presentation),
     },
     {
       path: "/gallery",
       name: 'media-gallery',
-      element: <MediaGallery />,
+      element: withSuspense(MediaGallery),
     },
     {
       path: "/events",
       name: 'events',
-      element: <Events />,
+      element: withSuspense(Events),
     },
     {
       path: "/directory",
       name: 'member-directory',
-      element: <MemberDirectory />,
+      element: withSuspense(MemberDirectory),
     },
     {
       path: "/prayer-requests",
       name: 'prayer-requests',
-      element: <PrayerRequests />,
+      element: withSuspense(PrayerRequests),
     },
     {
       path: "/admin/events",
       name: 'admin-events',
-      element: <AdminEvents />,
+      element: withSuspense(AdminEvents),
     },
     /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
     {
       path: "*",
       name: '404',
-      element: <NotFound />,
+      element: withSuspense(NotFound),
     },
 ];
 
