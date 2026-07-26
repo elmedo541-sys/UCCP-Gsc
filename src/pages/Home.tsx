@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { UserPlus, LogIn, BookOpen, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
+import { useUserAuth } from "@/hooks/useUserAuth";
+import UserMenu from "@/components/UserMenu";
 
 interface HomepageImage {
   id: string;
@@ -25,10 +27,26 @@ interface Event {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isLoggedIn, personId } = useUserAuth();
   const [images, setImages] = useState<HomepageImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; profile_picture: string | null } | null>(null);
+
+  // Fetch logged-in user's name/photo for the header menu
+  useEffect(() => {
+    if (!isLoggedIn || !personId) { setUserProfile(null); return; }
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('people')
+        .select('full_name, profile_picture')
+        .eq('uuid', personId)
+        .maybeSingle();
+      if (data) setUserProfile({ full_name: data.full_name ?? 'Me', profile_picture: data.profile_picture ?? null });
+    };
+    fetchProfile();
+  }, [isLoggedIn, personId]);
 
   // Fetch homepage images
   useEffect(() => {
@@ -100,7 +118,7 @@ export default function Home() {
               <h1 className="text-lg font-bold text-slate-800">United Church of Christ In The Philippines</h1>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -110,23 +128,29 @@ export default function Home() {
               <MessageSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Feed</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate("/user/login")}
-              className="gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              <span className="hidden sm:inline">Login</span>
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => navigate("/register")}
-              className="gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Register</span>
-            </Button>
+            {isLoggedIn && userProfile ? (
+              <UserMenu name={userProfile.full_name} picture={userProfile.profile_picture} />
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/user/login")}
+                  className="gap-2"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span className="hidden sm:inline">Login</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/register")}
+                  className="gap-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Register</span>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -177,23 +201,36 @@ export default function Home() {
                 {currentImage.description || 'Join our community of faith and fellowship. Register today to become part of our growing church family.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                <Button 
-                  size="lg"
-                  onClick={() => navigate("/register")}
-                  className="bg-white text-blue-900 hover:bg-blue-50 shadow-xl text-lg px-8"
-                >
-                  <UserPlus className="mr-2 h-5 w-5" />
-                  Register Now
-                </Button>
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate("/user/login")}
-                  className="bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 shadow-xl text-lg px-8"
-                >
-                  <LogIn className="mr-2 h-5 w-5" />
-                  Member Login
-                </Button>
+                {isLoggedIn ? (
+                  <Button
+                    size="lg"
+                    onClick={() => navigate("/feed")}
+                    className="bg-white text-blue-900 hover:bg-blue-50 shadow-xl text-lg px-8"
+                  >
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    Go to Feed
+                  </Button>
+                ) : (
+                  <>
+                    <Button 
+                      size="lg"
+                      onClick={() => navigate("/register")}
+                      className="bg-white text-blue-900 hover:bg-blue-50 shadow-xl text-lg px-8"
+                    >
+                      <UserPlus className="mr-2 h-5 w-5" />
+                      Register Now
+                    </Button>
+                    <Button 
+                      size="lg"
+                      variant="outline"
+                      onClick={() => navigate("/user/login")}
+                      className="bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 shadow-xl text-lg px-8"
+                    >
+                      <LogIn className="mr-2 h-5 w-5" />
+                      Member Login
+                    </Button>
+                  </>
+                )}
                 <Button
                   size="lg"
                   variant="outline"
