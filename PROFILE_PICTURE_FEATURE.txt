@@ -1,0 +1,140 @@
+========================================
+PROFILE PICTURE UPLOAD FEATURE
+========================================
+
+OVERVIEW
+--------
+Users can now upload a profile picture to personalize their account. The profile
+picture is displayed in their profile page and can be updated at any time.
+
+HOW IT WORKS
+------------
+1. User logs in and goes to Profile page (/user/profile)
+2. At the top of the profile form, they see the "Profile Picture" section
+3. If no picture is uploaded, a default user icon is shown
+4. Click "Upload Picture" button to select an image file
+5. File is uploaded to secure cloud storage
+6. Preview appears immediately after upload
+7. Click "Save Changes" button to save the profile with new picture
+
+SUPPORTED FILE FORMATS
+----------------------
+✅ JPG / JPEG
+✅ PNG
+✅ GIF
+✅ WEBP
+📏 Maximum file size: 10 MB
+
+FEATURES
+--------
+- Real-time preview after upload
+- Progress bar during upload
+- Validates file type and size before upload
+- Secure cloud storage using Enter AI API
+- Circular avatar display (32x32 pixels)
+- Fallback to user icon if no picture
+- Can change picture multiple times
+- Picture persists across sessions
+
+TECHNICAL IMPLEMENTATION
+------------------------
+- Database Column: people.profile_picture (TEXT)
+- Storage: Enter Cloud resource storage
+- Edge Function: upload-profile-picture
+- Frontend Hook: useProfilePictureUpload
+- Upload Configuration:
+  * Max file size: 10 MB
+  * Allowed extensions: jpg, jpeg, png, gif, webp
+  * Content-Type: application/octet-stream (for presigned URL)
+
+UPLOAD FLOW
+-----------
+1. User selects image file
+2. Frontend validates file size and extension
+3. Request presigned upload URL from Edge Function
+4. Edge Function contacts Enter AI API
+5. Frontend uploads file directly to cloud storage
+6. Resource path stored in database
+7. Image displayed from cloud CDN
+
+SECURITY
+--------
+- Files uploaded to secure cloud storage
+- Presigned URLs expire after 15 minutes
+- Direct upload from browser to storage (no server intermediary)
+- Resource paths validated on backend
+- Only authenticated users can upload
+- File type and size validated on both frontend and backend
+
+DATABASE SCHEMA
+---------------
+ALTER TABLE people ADD COLUMN profile_picture TEXT;
+
+EDGE FUNCTION
+-------------
+Function Name: upload-profile-picture
+Secret Used: AI_API_TOKEN_652bedb5e34b
+Endpoint: /code/api/v1/edge-function/resource_path
+Method: POST
+Request Body: { file_name: string, file_size: number }
+Response: { success: boolean, upload_url: string, resource_path: string }
+
+FRONTEND HOOK
+-------------
+Hook: useProfilePictureUpload
+Location: src/hooks/useProfilePictureUpload.ts
+Methods:
+  - uploadFile(file: File): Promise<string | null>
+  - cancelUpload(): void
+  - reset(): void
+  - validateFile(file: File): string | null
+State:
+  - isUploading: boolean
+  - progress: number (0-100)
+  - error: string | null
+  - resourcePath: string | null
+  - previewUrl: string | null
+
+DISPLAY URL FORMAT
+------------------
+Profile pictures are displayed using the full CDN URL:
+https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/{resource_path}
+
+Example:
+resource_path: "resources/projects/proj-abc123/profile_xyz.jpg"
+Display URL: https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/projects/proj-abc123/profile_xyz.jpg
+
+IMPORTANT: Always use crossOrigin="anonymous" attribute when displaying images
+from the CDN to prevent CORS/CORP issues.
+
+EXAMPLE USAGE
+-------------
+1. User logs in as user101
+2. Goes to Profile page
+3. Clicks "Upload Picture"
+4. Selects profile.jpg (2 MB)
+5. File uploads with progress bar
+6. Preview shows the uploaded picture
+7. Clicks "Save Changes"
+8. Profile picture saved to database
+9. Picture visible on every visit to profile page
+
+ERROR HANDLING
+--------------
+- File too large → "File too large. Maximum allowed: 10MB"
+- Wrong file type → "Unsupported file type. Allowed: jpg, png, gif, webp"
+- Upload failed → "Failed to upload file"
+- Network error → "Upload failed. Please try again."
+- Cancel upload → "Upload cancelled"
+
+USER EXPERIENCE
+---------------
+✅ Instant feedback with progress bar
+✅ Preview before saving
+✅ Clear error messages
+✅ File size and type validation
+✅ Can replace picture anytime
+✅ Responsive design (works on mobile)
+✅ Accessible with keyboard navigation
+
+========================================

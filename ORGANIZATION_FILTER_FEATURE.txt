@@ -1,0 +1,176 @@
+========================================
+ORGANIZATION FILTER FEATURE
+========================================
+
+This document describes the clickable organization filter feature in the Admin Dashboard.
+
+========================================
+FEATURE OVERVIEW
+========================================
+
+The admin dashboard now has clickable organization cards that allow filtering the people list by organization.
+
+Key Features:
+✅ Click any organization card to filter members
+✅ Visual indicator shows active filter (colored ring)
+✅ People list updates instantly
+✅ Export respects active filter
+✅ Filter count shown in table header
+✅ Smooth transitions and hover effects
+✅ Names sorted alphabetically A-Z
+
+========================================
+HOW TO USE
+========================================
+
+1. LOGIN as admin
+   - Go to /admin/login
+   - Login with admin credentials
+
+2. VIEW DASHBOARD
+   - See 6 organization cards at the top:
+     • Total People (all members)
+     • CYAF (Christian Young Adult Fellowship)
+     • CYF (Christian Youth Fellowship)
+     • CWA (Christian Women Association)
+     • UCM (United Church Men)
+     • Children
+
+3. CLICK TO FILTER
+   - Click any organization card
+   - People list shows only that organization
+   - Active card shows colored ring border
+   - Table header shows: "(Filtered: CYAF - 16 members)"
+
+4. VIEW ALL AGAIN
+   - Click "Total People" card
+   - Shows all members
+   - Ring border appears on "Total People"
+
+5. EXPORT FILTERED DATA
+   - With filter active, click "Export to Excel"
+   - Only filtered members are exported
+   - Example: If CYAF is active, only CYAF members exported
+
+========================================
+VISUAL INDICATORS
+========================================
+
+Active Filter:
+- Ring-2 border in organization color
+- Total People: primary color ring
+- CYAF: blue ring
+- CYF: green ring
+- CWA: purple ring
+- UCM: orange ring
+- Children: pink ring
+
+Hover Effect:
+- Shadow increases on hover
+- Cursor changes to pointer
+- Smooth transition animation
+
+========================================
+ORGANIZATION CODES
+========================================
+
+C - Children (ages 1-12)
+CYF - Christian Youth Fellowship (ages 13-24)
+CYAF - Christian Young Adult Fellowship (ages 25-39)
+CWA - Christian Women Association (ages 40-59)
+UCM - United Church Men (ages 60+)
+
+========================================
+TECHNICAL DETAILS
+========================================
+
+State Management:
+- organizationFilter: string | null
+  • null = show all
+  • 'CYAF', 'CYF', 'CWA', 'UCM', 'C' = filtered
+
+Filtering Logic:
+const filteredPeople = (organizationFilter 
+  ? people.filter(p => p.organization === organizationFilter)
+  : people
+).sort((a, b) => {
+  const nameA = a.full_name?.toLowerCase() || '';
+  const nameB = b.full_name?.toLowerCase() || '';
+  return nameA.localeCompare(nameB);
+});
+
+Sorting:
+- All names sorted alphabetically A-Z
+- Case-insensitive sorting (a = A)
+- Works with both filtered and unfiltered lists
+- Uses localeCompare for proper alphabetical order
+
+Card Click Handler:
+onClick={() => setOrganizationFilter('CYAF')}
+
+Active Card Styling:
+className={`cursor-pointer transition-all hover:shadow-lg ${
+  organizationFilter === 'CYAF' ? 'ring-2 ring-blue-600' : ''
+}`}
+
+========================================
+BENEFITS
+========================================
+
+✅ Quick organization filtering
+✅ Easy to see organization distribution
+✅ Export specific organization data
+✅ Better data management
+✅ Intuitive user experience
+✅ No need for separate filter controls
+✅ Visual feedback on active filter
+✅ Alphabetical sorting for easy name lookup
+
+========================================
+USE CASES
+========================================
+
+1. Organization Leaders
+   - CWA leader views only CWA members
+   - Export CWA member list for events
+   
+2. Youth Coordinators
+   - Filter CYF or CYAF members
+   - Plan age-appropriate activities
+
+3. Children's Ministry
+   - View all children members
+   - Export for children's programs
+
+4. Church Administrator
+   - Quick overview of all organizations
+   - Compare organization sizes
+   - Generate organization-specific reports
+
+========================================
+EXAMPLE WORKFLOW
+========================================
+
+Scenario: CWA Leader wants member list
+
+1. Admin logs in to dashboard
+2. Sees 14 CWA members (purple card)
+3. Clicks CWA card
+4. Table shows only 14 CWA women
+5. Table header: "(Filtered: CWA - 14 members)"
+6. Clicks "Export to Excel"
+7. Gets CWA-only CSV file
+8. Clicks "Total People" to see all again
+
+========================================
+ACCESSIBILITY
+========================================
+
+✅ Keyboard accessible (cards are focusable)
+✅ Clear visual feedback
+✅ High contrast colors
+✅ Readable text sizes
+✅ Smooth transitions
+✅ Hover states clearly visible
+
+========================================

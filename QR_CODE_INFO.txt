@@ -1,0 +1,150 @@
+========================================
+QR CODE FOR CHURCH REGISTRATION WEBSITE
+========================================
+
+Website URL: https://652bedb5e34b4901a40fd8b9050efb08.prod.enter.pro
+
+QR Code File Location: /workspace/thread/public/qr-code.png
+
+========================================
+HOW TO ACCESS THE QR CODE
+========================================
+
+The QR code has been generated and saved to your project.
+
+Direct Access URL (once deployed):
+https://652bedb5e34b4901a40fd8b9050efb08.prod.enter.pro/qr-code.png
+
+========================================
+HOW TO USE THE QR CODE
+========================================
+
+1. PRINT IT:
+   - Download qr-code.png from public folder
+   - Print on flyers, posters, or bulletins
+   - People can scan to visit registration site
+
+2. SHARE DIGITALLY:
+   - Include in church emails
+   - Post on social media
+   - Add to digital announcements
+   - Include in presentations
+
+3. DISPLAY IT:
+   - Project on screen during services
+   - Display on church website
+   - Add to bulletin boards
+   - Include in newsletters
+
+========================================
+QR CODE SPECIFICATIONS
+========================================
+
+- Size: 500x500 pixels
+- Format: PNG (transparent background)
+- Quality: High resolution (suitable for printing)
+- File Size: ~800 bytes (very small)
+- Destination: Church registration website
+
+========================================
+SCANNING THE QR CODE
+========================================
+
+When someone scans this QR code with their phone camera:
+1. Camera app detects the QR code
+2. Shows a notification/link
+3. Tap to open the church registration website
+4. Arrives at the home page with Register button
+
+Compatible with:
+✅ iPhone Camera app (iOS 11+)
+✅ Android Camera app (most phones)
+✅ QR scanner apps
+✅ Social media apps (WeChat, Facebook, etc.)
+
+========================================
+SUGGESTED USAGE
+========================================
+
+1. **Church Bulletins:**
+   "Scan to register as a church member"
+   [QR CODE]
+   
+2. **Posters:**
+   "Join Our Church Family"
+   "Scan to Register"
+   [QR CODE]
+
+3. **Email Signatures:**
+   "Register for membership"
+   [QR CODE as image]
+
+4. **Social Media Posts:**
+   "New members welcome! Scan to register 👇"
+   [QR CODE]
+
+========================================
+PRINTING RECOMMENDATIONS
+========================================
+
+Minimum Print Size: 2cm x 2cm (0.8" x 0.8")
+Recommended Size: 5cm x 5cm (2" x 2") or larger
+Best Quality: Print at 300 DPI or higher
+
+Color Options:
+- Black on White (best contrast)
+- Dark Blue on White
+- Any dark color on light background
+
+DO NOT:
+❌ Print too small (less than 2cm)
+❌ Use low contrast colors
+❌ Stretch or distort the image
+❌ Cover or crop parts of the QR code
+
+========================================
+DOWNLOAD INSTRUCTIONS
+========================================
+
+Option 1 - From Project Files:
+1. Navigate to /workspace/thread/public/
+2. Find qr-code.png
+3. Download and use
+
+Option 2 - From Deployed Site:
+1. Visit: https://652bedb5e34b4901a40fd8b9050efb08.prod.enter.pro/qr-code.png
+2. Right-click → Save Image As
+3. Download and use
+
+Option 3 - Generate New QR Code:
+Visit: https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https://652bedb5e34b4901a40fd8b9050efb08.prod.enter.pro
+
+========================================
+TESTING THE QR CODE
+========================================
+
+To test if the QR code works:
+1. Open your phone camera
+2. Point at the QR code on your computer screen
+3. Wait for notification to appear
+4. Tap the notification
+5. Should open your church registration website
+
+If it doesn't work:
+- Ensure good lighting
+- Hold phone steady
+- Try moving closer/farther
+- Make sure QR code isn't blurry
+
+========================================
+FREE QR CODE SERVICE USED
+========================================
+
+Generated using: QR Server API (https://api.qrserver.com)
+- Free to use
+- No registration required
+- High quality output
+- Commercial use allowed
+- No expiration
+
+========================================

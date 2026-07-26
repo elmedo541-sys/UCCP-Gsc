@@ -1,0 +1,71 @@
+========================================
+USERNAME CHANGE FEATURE - ONE TIME ONLY
+========================================
+
+OVERVIEW
+--------
+All registered users have default usernames (user101, user102, etc.) that were
+automatically assigned during registration. Users can now change their username
+ONE TIME ONLY to personalize their account.
+
+HOW IT WORKS
+------------
+1. User logs in with default username (e.g., user101)
+2. Goes to Profile page (/user/profile)
+3. In the Security section, they see "Current Username" field
+4. Click "Change (One Time Only)" button
+5. Enter:
+   - New username (3-20 characters, letters, numbers, underscores only)
+   - Current password (for verification)
+6. Click "Change Username"
+7. User is automatically logged out
+8. Must login again with NEW username
+
+USERNAME RULES
+--------------
+✅ 3-20 characters
+✅ Letters (a-z, A-Z)
+✅ Numbers (0-9)
+✅ Underscores (_)
+✅ Must be unique (not already taken)
+✅ Automatically converted to lowercase
+❌ No spaces
+❌ No special characters except underscore
+
+SECURITY
+--------
+- Requires current password verification
+- Cannot be changed twice (one time only restriction)
+- Username uniqueness is enforced
+- Once changed, the button is disabled and shows "Already changed"
+
+DATABASE TRACKING
+-----------------
+- Table: user_auth
+- Column: username_changed (BOOLEAN, default: FALSE)
+- Function: change_user_username(p_person_id, p_current_password, p_new_username)
+
+EXAMPLE WORKFLOW
+----------------
+User: user101
+Default Password: 482756
+
+Step 1: Login with user101 / 482756
+Step 2: Go to Profile → Security section
+Step 3: Click "Change (One Time Only)"
+Step 4: Enter new username: john_doe
+Step 5: Enter password: 482756
+Step 6: Click "Change Username"
+Step 7: Success! Logout automatically
+Step 8: Login with john_doe / 482756
+
+Note: User CANNOT change username again!
+
+AFFECTED USERS
+--------------
+All 72 registered users from Excel file can use this feature:
+- user101 through user174 (with gaps at 164, 168)
+- Each can change username exactly once
+- Default passwords remain the same until user changes them
+
+========================================

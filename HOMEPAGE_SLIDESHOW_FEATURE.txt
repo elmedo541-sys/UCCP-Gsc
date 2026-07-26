@@ -1,0 +1,358 @@
+╔═══════════════════════════════════════════════════════════════════════╗
+║          HOMEPAGE SLIDESHOW FEATURE - DOCUMENTATION                   ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+🎬 FEATURE OVERVIEW:
+═══════════════════════════════════════════════════════════════════════════
+
+Administrators can now manage homepage images that automatically cycle in a 
+beautiful slideshow with 4-second intervals. Each image can have custom title 
+and description text displayed as an overlay.
+
+
+✨ KEY FEATURES:
+═══════════════════════════════════════════════════════════════════════════
+
+✅ Admin Image Management
+   - Upload new homepage images (up to 10MB)
+   - Set custom title and description for each image
+   - Control display order (determines slideshow sequence)
+   - Activate/deactivate images (hide without deleting)
+   - Delete unwanted images
+
+✅ Automatic Slideshow
+   - 4-second auto-advance between images
+   - Smooth fade transitions (500ms)
+   - Circular navigation (loops back to first image)
+   - Slideshow indicators showing current position
+   - Clickable indicators for manual navigation
+
+✅ Responsive Design
+   - Works on all devices (mobile, tablet, desktop)
+   - Optimized image loading with crossOrigin support
+   - Beautiful gradient overlay for text readability
+   - Maintains aspect ratio across screen sizes
+
+
+🎯 HOW TO USE:
+═══════════════════════════════════════════════════════════════════════════
+
+FOR SUPER ADMINS:
+
+1. **Access Homepage Images Manager**
+   - Log in as Super Admin
+   - Go to Admin Dashboard
+   - Click "Manage Homepage Images" button in header
+
+2. **Add New Image**
+   - Click "Add New Image" button
+   - Select image file (JPG, PNG, GIF, WEBP - max 10MB)
+   - Enter title (e.g., "Welcome to GSC Members Profile Registration")
+   - Enter description (e.g., "Join our community...")
+   - Set display order (1, 2, 3... determines sequence)
+   - Click "Upload Image"
+   - Wait for upload progress (shows percentage)
+
+3. **Manage Existing Images**
+   - View all uploaded images in grid layout
+   - Each card shows:
+     * Image preview
+     * Title and description
+     * Display order number
+     * Active/inactive status
+   
+   Actions available:
+   - **Hide** - Deactivate image (won't show on homepage)
+   - **Show** - Activate image (will appear in slideshow)
+   - **Delete** - Permanently remove image
+
+4. **Arrange Slideshow Order**
+   - Images display in order: 1, 2, 3, 4...
+   - Lower numbers appear first
+   - Edit display order when adding images
+   - Reorder by deleting and re-adding if needed
+
+5. **View Changes**
+   - Visit homepage to see slideshow in action
+   - Images cycle automatically every 4 seconds
+   - Text overlays show your custom titles/descriptions
+
+
+FOR VIEWERS:
+   - No access to Homepage Images Manager
+   - "Manage Homepage Images" button not visible
+   - Can view slideshow on public homepage like everyone else
+
+
+📋 HOMEPAGE SLIDESHOW BEHAVIOR:
+═══════════════════════════════════════════════════════════════════════════
+
+**Automatic Cycling:**
+- Every 4 seconds, slideshow advances to next image
+- Fade-out transition (500ms)
+- Image changes
+- Fade-in transition (500ms)
+- Repeats continuously while user is on homepage
+
+**Manual Navigation:**
+- Dots at bottom show number of images
+- Current image has expanded dot
+- Click any dot to jump to that image
+- Auto-cycling resumes after manual selection
+
+**Single Image:**
+- If only 1 active image, no cycling occurs
+- No indicators shown
+- Image displays statically
+
+**No Images:**
+- Default church building image displays
+- Default text: "Welcome to GSC Members Profile Registration"
+- Default description: "Join our community and stay connected..."
+
+
+🎨 VISUAL FEATURES:
+═══════════════════════════════════════════════════════════════════════════
+
+**Image Display:**
+- Full-width hero section
+- Height: 400px (mobile) to 500px (desktop)
+- Object-fit: cover (maintains aspect ratio)
+- Gradient overlay for text readability
+
+**Text Overlay:**
+- Centered on image
+- White text with drop shadow for visibility
+- Title: Large bold text (4xl-6xl)
+- Description: Medium text (lg-xl)
+- Call-to-action buttons below
+
+**Transition Effects:**
+- Smooth opacity fade (500ms)
+- Both image and text fade together
+- Professional, polished appearance
+
+**Indicators:**
+- White dots at bottom center
+- Active indicator expands horizontally
+- Semi-transparent when inactive
+- Clickable for manual navigation
+
+
+💾 DATABASE STRUCTURE:
+═══════════════════════════════════════════════════════════════════════════
+
+Table: homepage_images
+
+Columns:
+- id (UUID) - Primary key
+- image_url (TEXT) - Full URL to uploaded image
+- title (TEXT) - Custom title text (nullable)
+- description (TEXT) - Custom description text (nullable)
+- display_order (INTEGER) - Sorting order (default: 0)
+- is_active (BOOLEAN) - Show/hide flag (default: true)
+- created_at (TIMESTAMPTZ) - Creation timestamp
+- created_by (UUID) - Admin who uploaded (foreign key)
+- updated_at (TIMESTAMPTZ) - Last update timestamp
+
+Indexes:
+- idx_homepage_images_order: (display_order ASC, created_at DESC)
+
+Security:
+- Row Level Security (RLS) enabled
+- Admins can manage all images
+- Public can only view active images
+
+
+🔐 SECURITY & PERMISSIONS:
+═══════════════════════════════════════════════════════════════════════════
+
+**Super Admin Access:**
+✅ View Homepage Images Manager
+✅ Upload new images
+✅ Edit image metadata
+✅ Activate/deactivate images
+✅ Delete images
+✅ Change display order
+
+**Viewer Access:**
+❌ Cannot access Homepage Images Manager
+❌ Cannot upload images
+❌ Cannot modify images
+✅ Can view slideshow on public homepage
+
+**Public Access:**
+❌ Cannot access admin features
+❌ Cannot modify anything
+✅ Can view active images in slideshow on homepage
+
+
+📁 FILES INVOLVED:
+═══════════════════════════════════════════════════════════════════════════
+
+**Frontend:**
+- src/pages/Home.tsx - Slideshow display component
+- src/pages/HomepageImagesManager.tsx - Admin management interface
+- src/pages/AdminDashboard.tsx - Added "Manage Homepage Images" button
+- src/router.tsx - Added route for /admin/homepage-images
+
+**Backend:**
+- Database migration - Created homepage_images table
+- upload-profile-picture edge function - Reused for image uploads
+
+**Database:**
+- Table: homepage_images
+- Policies: RLS for admin management and public viewing
+- Default data: Church building image pre-inserted
+
+
+🎬 EXAMPLE WORKFLOW:
+═══════════════════════════════════════════════════════════════════════════
+
+**Scenario: Church wants to showcase 3 different images**
+
+Step 1: Super Admin logs in
+Step 2: Click "Manage Homepage Images"
+Step 3: Upload Image 1
+   - Select church building photo
+   - Title: "Welcome to UCCP GSC"
+   - Description: "Join our community of faith"
+   - Display Order: 1
+   - Upload
+
+Step 4: Upload Image 2
+   - Select youth fellowship photo
+   - Title: "Active Youth Ministry"
+   - Description: "Engaging programs for young people"
+   - Display Order: 2
+   - Upload
+
+Step 5: Upload Image 3
+   - Select worship service photo
+   - Title: "Worship With Us"
+   - Description: "Sunday services at 9 AM and 5 PM"
+   - Display Order: 3
+   - Upload
+
+Step 6: Visit homepage
+   - See Image 1 for 4 seconds
+   - Automatically transitions to Image 2
+   - Then Image 3
+   - Cycles back to Image 1
+   - Continues indefinitely
+
+Step 7: (Optional) Deactivate Image 2
+   - Go back to manager
+   - Click "Hide" on Image 2
+   - Now only Images 1 and 3 cycle
+
+Step 8: (Optional) Reactivate
+   - Click "Show" on Image 2
+   - All 3 images cycle again
+
+
+⚙️ TECHNICAL SPECIFICATIONS:
+═══════════════════════════════════════════════════════════════════════════
+
+**Slideshow Timing:**
+- Interval: 4000ms (4 seconds)
+- Transition duration: 500ms
+- Total cycle time: 4.5 seconds per image
+
+**Image Requirements:**
+- Max file size: 10MB
+- Supported formats: JPG, JPEG, PNG, GIF, WEBP
+- Recommended dimensions: 1920x600px or wider
+- Aspect ratio: 16:9 or wider for best results
+
+**Upload Process:**
+1. Select file (client-side validation)
+2. Request presigned URL from edge function
+3. Upload directly to cloud storage via XHR
+4. Track upload progress (0-100%)
+5. Save metadata to database
+6. Refresh image list
+
+**Performance:**
+- Images cached by browser
+- Lazy loading enabled
+- Optimized transitions
+- Minimal memory footprint
+- CDN-delivered assets
+
+
+🐛 TROUBLESHOOTING:
+═══════════════════════════════════════════════════════════════════════════
+
+**Problem: Upload fails**
+Solution:
+- Check file size (must be under 10MB)
+- Verify file format (JPG, PNG, GIF, WEBP only)
+- Check internet connection
+- Try refreshing page and re-uploading
+
+**Problem: Images don't appear on homepage**
+Solution:
+- Verify image is marked as "Active" (not hidden)
+- Check image URL is valid
+- Refresh homepage (hard refresh: Ctrl+F5)
+- Check browser console for errors
+
+**Problem: Slideshow not auto-advancing**
+Solution:
+- Ensure you have 2+ active images
+- Check browser JavaScript is enabled
+- Refresh the page
+- Clear browser cache
+
+**Problem: "Manage Homepage Images" button not visible**
+Solution:
+- Verify you're logged in as Super Admin (not Viewer)
+- Only Super Admins can access this feature
+- Check user role in database
+
+**Problem: Image appears stretched or distorted**
+Solution:
+- Use higher resolution images (min 1920px wide)
+- Maintain 16:9 aspect ratio or wider
+- Check original image quality
+- Re-upload at higher resolution
+
+
+✅ SUCCESS INDICATORS:
+═══════════════════════════════════════════════════════════════════════════
+
+You know the feature is working when:
+✓ "Manage Homepage Images" button appears for Super Admin
+✓ Upload dialog opens when clicking "Add New Image"
+✓ Progress bar shows during upload
+✓ Images appear in grid after upload
+✓ Homepage shows uploaded images in slideshow
+✓ Images cycle every 4 seconds automatically
+✓ Indicators at bottom show slideshow position
+✓ Clicking indicators navigates to that image
+✓ Custom titles and descriptions display correctly
+✓ Hide/Show buttons toggle image visibility
+✓ Homepage respects active/inactive status
+
+
+🎉 BENEFITS:
+═══════════════════════════════════════════════════════════════════════════
+
+✨ Dynamic Content - Keep homepage fresh without code changes
+✨ Professional Look - Engaging slideshow captures attention
+✨ Flexible Messaging - Different titles for different images
+✨ Easy Management - Upload and manage through admin interface
+✨ No Technical Skills - Super Admin can update without developer
+✨ Multiple Messages - Showcase various aspects of church life
+✨ Seasonal Updates - Easy to add Christmas, Easter, etc. images
+✨ Event Promotion - Feature upcoming events prominently
+✨ Mobile Friendly - Works beautifully on all devices
+
+
+═══════════════════════════════════════════════════════════════════════════
+Last Updated: 2026-04-13
+Status: ✅ ACTIVE
+Access: Super Admin Only
+Default Images: 1 (Church building)
+═══════════════════════════════════════════════════════════════════════════

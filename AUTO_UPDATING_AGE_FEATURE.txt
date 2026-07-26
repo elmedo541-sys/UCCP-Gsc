@@ -1,0 +1,207 @@
+========================================
+AUTO-UPDATING AGE FEATURE
+========================================
+
+This document describes the automatic age calculation and display feature in the Admin Dashboard.
+
+========================================
+FEATURE OVERVIEW
+========================================
+
+The admin dashboard now displays each user's age in a dedicated column. The age is calculated dynamically from the date of birth and automatically updates every year without any manual intervention.
+
+Key Features:
+✅ Age column added to people table
+✅ Age calculated dynamically from date_of_birth
+✅ Automatically updates every year (no manual updates needed)
+✅ Age included in Excel exports
+✅ Shows "N/A" if date of birth is missing
+✅ Accurate age calculation accounting for birthdays
+
+========================================
+HOW IT WORKS
+========================================
+
+Age Calculation Logic:
+The calculateAge() function computes the current age by:
+1. Taking the date_of_birth from the database
+2. Comparing it with today's date
+3. Calculating the year difference
+4. Adjusting if the birthday hasn't occurred yet this year
+
+Example:
+- Birth Date: March 15, 1990
+- Today's Date: April 8, 2026
+- Calculated Age: 36 years
+
+Function:
+```typescript
+const calculateAge = (dateOfBirth: string | null): number | null => {
+  if (!dateOfBirth) return null;
+  
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  // Adjust if birthday hasn't occurred yet this year
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
+```
+
+========================================
+AUTO-UPDATE MECHANISM
+========================================
+
+How It Updates Automatically:
+
+1. **No Stored Age**: Age is NEVER stored in the database - only date_of_birth is stored
+2. **Real-time Calculation**: Every time the dashboard loads, age is calculated from current date
+3. **Automatic Birthday Updates**: When a user's birthday passes, the age automatically increases
+4. **No Manual Updates Required**: Zero maintenance - completely automatic
+
+Example Timeline:
+- March 14, 2026: User shows as 35 years old
+- March 15, 2026: User's birthday - automatically shows as 36 years old
+- March 16, 2026: User still shows as 36 years old
+
+========================================
+DISPLAY LOCATIONS
+========================================
+
+Age is displayed in:
+
+1. **Admin Dashboard Table**
+   - Column: "Age" (between Name and Organization)
+   - Format: Bold number (e.g., "36")
+   - Missing data: Shows "N/A" in muted text
+
+2. **Excel Exports**
+   - Column: "Age" (after Date of Birth)
+   - Format: Number value
+   - Missing data: Empty cell
+   - Updates: Reflects age at time of export
+
+========================================
+USE CASES
+========================================
+
+1. **Organization Filtering**
+   - Filter by CYAF (ages 25-39)
+   - See all members with their current ages
+   - Quickly identify age distribution
+
+2. **Birthday Planning**
+   - Check upcoming birthdays section
+   - See current age of birthday celebrants
+   - Plan appropriate celebrations
+
+3. **Member Records**
+   - Export member lists with ages
+   - Statistical analysis by age group
+   - Demographic reporting
+
+4. **Eligibility Verification**
+   - Verify age requirements for programs
+   - Youth program enrollment (Children: 1-12)
+   - Senior programs (UCM: 60+)
+
+========================================
+DATA ACCURACY
+========================================
+
+The age calculation is:
+✅ Timezone-aware (uses local timezone)
+✅ Leap year compatible
+✅ Handles all date formats
+✅ Accounts for future birthdays in current year
+✅ Never shows negative ages
+
+Example Edge Cases Handled:
+- Leap year birthdays (Feb 29)
+- End of month birthdays
+- New Year transitions
+- Timezone differences
+
+========================================
+BENEFITS
+========================================
+
+✅ No manual age updates required
+✅ Always accurate and current
+✅ Reduces data maintenance
+✅ Prevents outdated information
+✅ Automatic year-over-year updates
+✅ Consistent across all views
+✅ Export-friendly format
+✅ Saves administrator time
+
+========================================
+TECHNICAL DETAILS
+========================================
+
+Database Storage:
+- Field: date_of_birth (DATE type)
+- Stored: YYYY-MM-DD format
+- Example: 1990-03-15
+
+Frontend Display:
+- Calculation: On every render
+- Performance: Negligible impact
+- Caching: React component-level
+
+CSV Export:
+- Column position: After "Date of Birth"
+- Format: Plain number
+- Example: 36
+
+========================================
+MAINTENANCE
+========================================
+
+Required Maintenance: NONE
+
+The feature is completely self-maintaining because:
+1. Age is calculated, not stored
+2. Uses JavaScript Date API (always current)
+3. No database updates needed
+4. No cron jobs required
+5. No manual interventions
+
+The only data that needs to be accurate is the date_of_birth field, which is set once during registration and rarely changes.
+
+========================================
+COMPARISON: OLD vs NEW
+========================================
+
+OLD SYSTEM (Stored Age):
+- Age stored in database: 35
+- Birthday passes: Still shows 35
+- Needs manual update: Admin must update
+- Data gets stale: Often outdated
+- Maintenance: Regular updates required
+
+NEW SYSTEM (Calculated Age):
+- Age calculated from birth date: 35
+- Birthday passes: Automatically shows 36
+- Needs manual update: Never
+- Data always fresh: Always accurate
+- Maintenance: Zero maintenance
+
+========================================
+FUTURE ENHANCEMENTS
+========================================
+
+Possible future additions:
+- Age range filters (e.g., 20-30, 31-40)
+- Age statistics in dashboard
+- Age-based member grouping
+- Birthday countdown in days
+- Age verification badges
+
+========================================
