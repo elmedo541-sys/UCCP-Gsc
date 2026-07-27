@@ -109,7 +109,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img 
-              src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/899a.png"
+             src="/uccp-logo.png"
               alt="United Church of Christ Logo"
               className="h-16 w-16 object-contain"
               crossOrigin="anonymous"
@@ -366,7 +366,7 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <img 
-              src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/899a.png"
+              src="/uccp-logo.png"
               alt="UCCP Logo"
               className="h-12 w-12 object-contain"
               crossOrigin="anonymous"
