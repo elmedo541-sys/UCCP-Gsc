@@ -38,6 +38,95 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_posts: {
+        Row: {
+          id: string
+          person_id: string
+          content: string
+          image_url: string | null
+          is_birthday_post: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          person_id: string
+          content: string
+          image_url?: string | null
+          is_birthday_post?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          person_id?: string
+          content?: string
+          image_url?: string | null
+          is_birthday_post?: boolean | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      feed_likes: {
+        Row: {
+          id: string
+          post_id: string
+          person_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          person_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          person_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_comments: {
+        Row: {
+          id: string
+          post_id: string
+          person_id: string
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          person_id: string
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          person_id?: string
+          content?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      
       admin_sessions: {
         Row: {
           admin_id: string
