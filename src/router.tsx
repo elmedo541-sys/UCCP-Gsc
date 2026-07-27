@@ -23,7 +23,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Wraps a lazy page in Suspense with a lightweight fallback so navigating
 // between routes shows a quick spinner instead of a blank white screen.
-function withSuspense(Component: React.LazyExoticComponent<() => JSX.Element>) {
+function withSuspense(Component: React.LazyExoticComponent<() => React.JSX.Element>) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Component />

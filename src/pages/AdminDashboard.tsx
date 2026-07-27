@@ -24,7 +24,6 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Person {
-  id: string;
   full_name: string;
   first_name: string;
   middle_name: string | null;
@@ -819,7 +818,7 @@ export default function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {filteredPeople.map(p => (
-                    <TableRow key={p.id} className="hover:bg-muted/30 transition-colors group">
+                    <TableRow key={p.uuid} className="hover:bg-muted/30 transition-colors group">
                       {/* Name + avatar */}
                       <TableCell className="pl-6 py-3">
                         <button
