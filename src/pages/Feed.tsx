@@ -11,6 +11,7 @@ import {
   Copy, Check, ExternalLink, LogIn,
 } from 'lucide-react';
 import ChatSupportWidget from '@/components/ChatSupportWidget';
+import OnboardingTour from '@/components/OnboardingTour';
 import UserMenu from '@/components/UserMenu';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import ProfileNudge from '@/components/ProfileNudge';
@@ -776,9 +777,12 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
       {/* Feed */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24 md:pb-6">
 
-        {isLoggedIn && personId && userProfile && (
-          <WelcomeBanner personId={personId} firstName={userProfile.first_name} />
-        )}
+       {isLoggedIn && personId && userProfile && (
+  <>
+    <OnboardingTour personId={personId} firstName={userProfile.first_name} />
+    <WelcomeBanner personId={personId} firstName={userProfile.first_name} />
+  </>
+)}
 
         {isLoggedIn && !nudgeDismissed && (
           <ProfileNudge missingFields={missingFields} onDismiss={() => setNudgeDismissed(true)} />
