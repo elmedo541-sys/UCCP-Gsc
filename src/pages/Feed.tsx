@@ -71,7 +71,7 @@ function Avatar({ picture, name, size = 'md' }: { picture: string | null; name: 
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
   const ringWrap = size === 'sm' ? 'p-[1.5px]' : 'p-[2px]';
   return (
-    <div className={`${ringWrap} rounded-full bg-gradient-to-br from-primary/60 via-primary/30 to-transparent flex-shrink-0`}>
+    <div className={`${ringWrap} rounded-full bg-gradient-to-br from-primary/60 via-primary/30 to-transparent flex-shrink-0 self-start`}>
       {picture && !imgError ? (
         <img
           src={picture}
@@ -798,7 +798,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
         {/* Create Post — logged in users only */}
         {isLoggedIn ? (
         <div className="sticky top-16 z-20 bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary/40 transition-all">
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-start">
             {userProfile && (
               <Avatar picture={userProfile.profile_picture} name={userProfile.full_name} />
             )}
