@@ -60,7 +60,7 @@ export default function Register() {
     date_of_birth: '', gender: '', organization: '', marital_status: '',
     spouse_name: '', date_of_marriage: '',
     occupation: '', educational_background: '',
-    mother_name: '', mother_birthday: '', father_name: '', father_birthday: '',
+    mother_name: '', father_name: '',
   });
   const [children, setChildren] = useState<Child[]>([{ name: '', birthday: '' }]);
   const [username, setUsername] = useState('');
@@ -126,8 +126,6 @@ export default function Register() {
         ...formData, full_name: fullName,
         date_of_birth: formData.date_of_birth || null,
         date_of_marriage: formData.date_of_marriage || null,
-        mother_birthday: formData.mother_birthday || null,
-        father_birthday: formData.father_birthday || null,
       };
       const { data: personData, error: personError } = await supabase
         .from('people').insert([sanitized]).select().single();
@@ -186,7 +184,7 @@ export default function Register() {
       className="min-h-screen flex items-center justify-center p-4 py-10 relative overflow-hidden"
       style={{
         backgroundImage: 'url(https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/c91049a2-add2-40.png)',
-        backgroundSize: 'cover', backgroundPosition: 'center',
+        backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
       }}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -399,9 +397,7 @@ export default function Register() {
                   <p className={sectionHeadCls}><Users className="w-3.5 h-3.5" /> Parents</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Mother's Name</Label><Input value={formData.mother_name} onChange={set('mother_name')} placeholder="Maria Dela Cruz" className={inputCls} /></div>
-                    <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Mother's Birthday</Label><Input type="date" value={formData.mother_birthday} onChange={set('mother_birthday')} className={`${inputCls} [color-scheme:dark]`} /></div>
                     <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Father's Name</Label><Input value={formData.father_name} onChange={set('father_name')} placeholder="Jose Dela Cruz" className={inputCls} /></div>
-                    <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Father's Birthday</Label><Input type="date" value={formData.father_birthday} onChange={set('father_birthday')} className={`${inputCls} [color-scheme:dark]`} /></div>
                   </div>
                 </section>
 
@@ -532,6 +528,24 @@ export default function Register() {
                   <p className="text-xs text-gray-500 mt-2">Verify your info above before submitting.</p>
                 </section>
 
+                <section className="rounded-xl border border-blue-800/60 bg-blue-950/30 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-300 mb-1">Data Privacy Notice</p>
+                      <p className="text-xs text-gray-300 leading-relaxed">
+                        In accordance with the Data Privacy Act of 2012 (Republic Act No. 10173),
+                        the personal information you provide will be collected, processed, and stored
+                        solely for church membership records and related ministry purposes. Your data
+                        will be kept confidential and will not be shared with third parties without
+                        your consent, except as required by law.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
                 <section>
                   <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-xl border border-gray-700 bg-gray-800/60 p-3.5">
                     <input
@@ -543,7 +557,8 @@ export default function Register() {
                     <span className="text-xs text-gray-300 leading-relaxed">
                       I agree to the collection and use of my personal information for
                       church membership records, and confirm that the details I've provided
-                      are accurate to the best of my knowledge.
+                      are accurate to the best of my knowledge, in accordance with the
+                      Data Privacy Act of 2012 (RA 10173).
                     </span>
                   </label>
                 </section>
