@@ -66,6 +66,7 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const set = useCallback(
     (field: keyof typeof formData) =>
@@ -114,6 +115,9 @@ export default function Register() {
     }
     if (username.length < 3) {
       toast({ title: 'Too Short', description: 'Username must be at least 3 characters.', variant: 'destructive' }); return;
+    }
+    if (!agreedToTerms) {
+      toast({ title: 'Agreement Required', description: 'Please agree to the terms and data privacy consent before submitting.', variant: 'destructive' }); return;
     }
     setLoading(true);
     try {
@@ -528,11 +532,27 @@ export default function Register() {
                   <p className="text-xs text-gray-500 mt-2">Verify your info above before submitting.</p>
                 </section>
 
+                <section>
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-xl border border-gray-700 bg-gray-800/60 p-3.5">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={e => setAgreedToTerms(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded border-gray-600 bg-gray-800 accent-blue-500 cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-xs text-gray-300 leading-relaxed">
+                      I agree to the collection and use of my personal information for
+                      church membership records, and confirm that the details I've provided
+                      are accurate to the best of my knowledge.
+                    </span>
+                  </label>
+                </section>
+
                 <div className="flex gap-3 pt-2 border-t border-gray-700">
                   <Button type="button" variant="outline" onClick={handleBack} className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent">
                     <ArrowLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
-                  <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0 transition-all duration-200 gap-2">
+                  <Button type="submit" disabled={loading || !agreedToTerms} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0 transition-all duration-200 gap-2">
                     {loading
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
                       : <><CheckCircle className="w-4 h-4" /> Submit Registration</>
