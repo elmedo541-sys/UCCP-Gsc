@@ -288,3 +288,108 @@ export default function Home() {
 
       {/* Upcoming Events Section */}
       {upcomingEvents.length > 0 && (
+        <div className="bg-muted/50 py-16">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between max-w-6xl mx-auto mb-8">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-7 w-7 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground">Upcoming Events</h2>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate('/events')}>
+                View All
+              </Button>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+              {upcomingEvents.map(event => (
+                <div
+                  key={event.id}
+                  onClick={() => navigate('/events')}
+                  className="bg-card border border-border rounded-2xl p-5 cursor-pointer hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
+                      <p className="text-xs font-semibold text-primary uppercase leading-none">
+                        {new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}
+                      </p>
+                      <p className="text-lg font-bold text-primary leading-none">
+                        {new Date(event.event_date).getDate()}
+                      </p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Badge variant="outline" className="text-xs mb-1">{event.category}</Badge>
+                      <p className="font-semibold text-foreground text-sm line-clamp-1">{event.title}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    {event.event_time && (
+                      <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{event.event_time}</p>
+                    )}
+                    {event.location && (
+                      <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" />{event.location}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Links Section */}
+      <div className="container mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-foreground text-center mb-8">Explore More</h2>
+        <div className="grid sm:grid-cols-2 md:grid-cols-5 gap-4 max-w-5xl mx-auto">
+          {[
+            { label: 'Community Feed', icon: MessageSquare, path: '/feed', desc: 'Posts & updates', color: 'text-indigo-600 bg-indigo-50' },
+            { label: 'Member Directory', icon: Users, path: '/directory', desc: 'Browse all church members', color: 'text-blue-600 bg-blue-50' },
+            { label: 'Events', icon: Calendar, path: '/events', desc: 'Upcoming services & activities', color: 'text-purple-600 bg-purple-50' },
+            { label: 'Prayer Wall', icon: Heart, path: '/prayer-requests', desc: 'Share & pray together', color: 'text-rose-600 bg-rose-50' },
+            { label: 'Gallery', icon: Film, path: '/gallery', desc: 'Photos & videos', color: 'text-green-600 bg-green-50' },
+          ].map(({ label, icon: Icon, path, desc, color }) => (
+            <button
+              key={path}
+              onClick={() => navigate(path)}
+              className="bg-card border border-border rounded-2xl p-5 text-center hover:shadow-md transition-all group"
+            >
+              <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                <Icon className="h-6 w-6" />
+              </div>
+              <p className="font-semibold text-foreground text-sm">{label}</p>
+              <p className="text-xs text-muted-foreground mt-1">{desc}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-slate-800 text-white py-8 mt-16">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <img 
+              src="/uccp-logo.png"
+              alt="UCCP Logo"
+              className="h-12 w-12 object-contain"
+              crossOrigin="anonymous"
+            />
+            <div className="text-left">
+              <p className="font-bold">UCCP-Good Samaritan Church</p>
+              <p className="text-sm text-slate-400">Founded 1948</p>
+            </div>
+          </div>
+          <p className="text-slate-400 text-sm mb-3">
+            © 2024 GSC Members Profile Registration. All rights reserved.
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin/login')}
+            className="text-slate-400 hover:text-white text-xs"
+          >
+            Admin Access
+          </Button>
+        </div>
+      </footer>
+      <ChatSupportWidget />
+    </div>
+  );
+}
