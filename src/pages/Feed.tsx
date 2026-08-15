@@ -537,7 +537,13 @@ export default function Feed() {
         .from('feed-images')
         .upload(path, imageFile, { upsert: true });
 
-      if (!uploadErr) {
+      if (uploadErr) {
+        toast({
+          title: 'Photo upload failed',
+          description: uploadErr.message || 'Could not upload the photo. Your post will be created without it.',
+          variant: 'destructive',
+        });
+      } else {
         const { data: urlData } = supabase.storage.from('feed-images').getPublicUrl(path);
         imageUrl = urlData.publicUrl;
       }
