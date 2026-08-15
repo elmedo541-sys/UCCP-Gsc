@@ -110,12 +110,11 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <img 
              src="/uccp-logo.png"
-              alt="UCCP-Good Samaritan Church Logo"
+              alt="United Church of Christ Logo"
               className="h-16 w-16 object-contain"
-              crossOrigin="anonymous"
             />
             <div>
-              <h1 className="text-lg font-bold text-slate-800">UCCP-Good Samaritan Church</h1>
+              <h1 className="text-lg font-bold text-slate-800">United Church of Christ In The Philippines</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -164,7 +163,6 @@ export default function Home() {
               src={currentImage.image_url}
               alt={currentImage.title || 'Church'}
               className="w-full h-full object-cover"
-              crossOrigin="anonymous"
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
@@ -369,10 +367,9 @@ export default function Home() {
               src="/uccp-logo.png"
               alt="UCCP Logo"
               className="h-12 w-12 object-contain"
-              crossOrigin="anonymous"
             />
             <div className="text-left">
-              <p className="font-bold">UCCP-Good Samaritan Church</p>
+              <p className="font-bold">United Church of Christ in The Philippines</p>
               <p className="text-sm text-slate-400">Founded 1948</p>
             </div>
           </div>

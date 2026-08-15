@@ -15,7 +15,6 @@ const Index = () => {
               src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/899a.png"
               alt="United Church of Christ Logo"
               className="h-16 w-16 object-contain"
-              crossOrigin="anonymous"
             />
             <div>
               <h1 className="text-lg font-bold text-slate-800">United Church of Christ</h1>
@@ -51,7 +50,6 @@ const Index = () => {
             src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/0fa8.png"
             alt="Church Building"
             className="w-full h-full object-cover"
-            crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
           
@@ -138,7 +136,6 @@ const Index = () => {
               src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/899a.png"
               alt="UCCP Logo"
               className="h-12 w-12 object-contain"
-              crossOrigin="anonymous"
             />
             <div className="text-left">
               <p className="font-bold">United Church of Christ in The Philippines</p>

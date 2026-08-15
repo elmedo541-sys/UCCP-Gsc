@@ -208,7 +208,6 @@ function CoverSlide({ slide, onZoom }: { slide: Slide; onZoom: (src: string) => 
         >
           <img
             src={slide.image}
-            crossOrigin="anonymous"
             alt="App preview"
             className="w-full rounded-2xl shadow-2xl border border-white/20 object-cover max-h-[55vh]"
             style={{ objectFit: 'cover' }}
@@ -298,7 +297,6 @@ function StepSlide({ slide, onZoom }: { slide: Slide; onZoom: (src: string) => v
         >
           <img
             src={slide.image}
-            crossOrigin="anonymous"
             alt={slide.title}
             className="w-full rounded-2xl shadow-2xl border border-white/20 object-cover"
             style={{ maxHeight: '52vh', objectFit: 'cover', objectPosition: 'top' }}
@@ -464,7 +462,6 @@ export default function Presentation() {
           </button>
           <img
             src={lightbox}
-            crossOrigin="anonymous"
             alt="Full size preview"
             className="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain"
             onClick={e => e.stopPropagation()}

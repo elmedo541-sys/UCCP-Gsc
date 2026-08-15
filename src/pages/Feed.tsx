@@ -55,6 +55,12 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function fullDate(iso: string): string {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+}
+
 function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 }
@@ -63,20 +69,21 @@ function getInitials(name: string): string {
 function Avatar({ picture, name, size = 'md' }: { picture: string | null; name: string; size?: 'sm' | 'md' }) {
   const [imgError, setImgError] = useState(false);
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
-  if (picture && !imgError) {
-    return (
-      <img
-        src={picture}
-        alt={name}
-        crossOrigin="anonymous"
-        onError={() => setImgError(true)}
-        className={`${sz} rounded-full object-cover flex-shrink-0 ring-2 ring-border`}
-      />
-    );
-  }
+  const ringWrap = size === 'sm' ? 'p-[1.5px]' : 'p-[2px]';
   return (
-    <div className={`${sz} rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 font-semibold text-primary ring-2 ring-border`}>
-      {getInitials(name)}
+    <div className={`${ringWrap} rounded-full bg-gradient-to-br from-primary/60 via-primary/30 to-transparent flex-shrink-0`}>
+      {picture && !imgError ? (
+        <img
+          src={picture}
+          alt={name}
+          onError={() => setImgError(true)}
+          className={`${sz} rounded-full object-cover block ring-2 ring-background`}
+        />
+      ) : (
+        <div className={`${sz} rounded-full bg-primary/15 flex items-center justify-center font-semibold text-primary ring-2 ring-background`}>
+          {getInitials(name)}
+        </div>
+      )}
     </div>
   );
 }
@@ -285,8 +292,8 @@ function PostCard({
           <div className="flex items-center gap-2.5">
             <Avatar picture={post.author_picture} name={post.author_name} />
             <div>
-              <p className="font-semibold text-sm text-foreground">{post.author_name}</p>
-              <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
+              <p className="font-semibold text-sm text-foreground leading-tight">{post.author_name}</p>
+              <p className="text-xs text-muted-foreground" title={fullDate(post.created_at)}>{timeAgo(post.created_at)}</p>
             </div>
           </div>
           {personId === post.person_id && (
@@ -304,12 +311,12 @@ function PostCard({
 
         {/* Image */}
         {post.image_url && (
-          <div className="rounded-xl overflow-hidden mb-3 bg-muted">
+          <div className="rounded-xl overflow-hidden mb-3 bg-muted border border-border/40">
             <img
               src={post.image_url}
               alt="Post image"
-              crossOrigin="anonymous"
-              className="w-full max-h-96 object-cover"
+              className="w-full max-h-[420px] object-cover"
+              loading="lazy"
             />
           </div>
         )}
@@ -537,13 +544,7 @@ export default function Feed() {
         .from('feed-images')
         .upload(path, imageFile, { upsert: true });
 
-      if (uploadErr) {
-        toast({
-          title: 'Photo upload failed',
-          description: uploadErr.message || 'Could not upload the photo. Your post will be created without it.',
-          variant: 'destructive',
-        });
-      } else {
+      if (!uploadErr) {
         const { data: urlData } = supabase.storage.from('feed-images').getPublicUrl(path);
         imageUrl = urlData.publicUrl;
       }
@@ -781,7 +782,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
       </div>
 
       {/* Feed */}
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24 md:pb-6">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-3 pb-24 md:pb-6">
 
        {isLoggedIn && personId && userProfile && (
   <>
@@ -796,7 +797,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
 
         {/* Create Post — logged in users only */}
         {isLoggedIn ? (
-        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm">
+        <div className="sticky top-16 z-20 bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary/40 transition-all">
           <div className="flex gap-3">
             {userProfile && (
               <Avatar picture={userProfile.profile_picture} name={userProfile.full_name} />
@@ -807,12 +808,12 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 rows={3}
-                className="resize-none rounded-xl border-border/60 focus:border-primary/50 bg-muted/40"
+                className="resize-none rounded-xl border-border/60 focus-visible:ring-primary/30 bg-muted/40"
               />
 
               {/* Image preview */}
               {imagePreview && (
-                <div className="relative rounded-xl overflow-hidden bg-muted">
+                <div className="relative rounded-xl overflow-hidden bg-muted border border-border/40">
                   <img src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover" />
                   <button
                     onClick={removeImage}
@@ -823,10 +824,10 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                 </div>
               )}
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pt-0.5">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-primary/10"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-primary/10"
                 >
                   <ImageIcon className="w-4 h-4" />
                   <span>Photo</span>
@@ -842,7 +843,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                   onClick={handlePost}
                   disabled={!content.trim() || posting}
                   size="sm"
-                  className="rounded-full px-5"
+                  className="rounded-full px-5 shadow-sm"
                 >
                   {posting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <Send className="w-4 h-4 mr-1.5" />}
                   Post
@@ -852,7 +853,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
           </div>
         </div>
         ) : (
-          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
+          <div className="bg-card border border-dashed border-border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
             <div>
               <p className="font-semibold text-foreground text-sm">Join the conversation</p>
               <p className="text-xs text-muted-foreground mt-0.5">Log in to post updates and interact with the community</p>
