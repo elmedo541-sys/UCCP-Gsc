@@ -22,7 +22,7 @@ import {
   LogOut, Loader2, Eye, X, Edit, Save, FileDown, Key, UserPlus,
   Users, Image, Search, Calendar, UserCheck, TrendingUp,
   ShieldCheck, Cake, ChevronRight, LayoutDashboard, Heart, Film, Clock, Activity,
-  Settings, Sun, Moon,
+  Settings, Sun, Moon, MessageCircle,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import {
@@ -475,6 +475,9 @@ export default function AdminDashboard() {
                     <Image className="w-4 h-4" /> Homepage Images
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem onClick={() => navigate('/feed')} className="gap-2 cursor-pointer">
+                  <MessageCircle className="w-4 h-4" /> Community Feed
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/gallery')} className="gap-2 cursor-pointer">
                   <Film className="w-4 h-4" /> Gallery
                 </DropdownMenuItem>
