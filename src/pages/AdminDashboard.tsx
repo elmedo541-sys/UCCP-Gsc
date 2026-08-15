@@ -14,9 +14,15 @@ import { useToast } from '@/hooks/use-toast';
 import AdminSupportPanel from '@/components/AdminSupportPanel';
 import AdminAddMemberDialog from '@/components/AdminAddMemberDialog';
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useTheme } from '@/contexts/ThemeContext';
+import {
   LogOut, Loader2, Eye, X, Edit, Save, FileDown, Key, UserPlus,
   Users, Image, Search, Calendar, UserCheck, TrendingUp,
   ShieldCheck, Cake, ChevronRight, LayoutDashboard, Heart, Film, Clock, Activity,
+  Settings, Sun, Moon,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import {
@@ -143,6 +149,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { isAdmin, isSuperAdmin, isEditor, canRegisterMembers, role, loading: authLoading, signOut } = useAuth();
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
 
   const [showAddMember, setShowAddMember] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
@@ -443,30 +450,46 @@ export default function AdminDashboard() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {isSuperAdmin && (
-              <Button variant="ghost" size="sm" onClick={() => navigate('/admin/manage-admins')} className="hidden sm:flex">
-                <Users className="w-4 h-4 mr-1.5" /> Manage Admins
-              </Button>
-            )}
-            {isSuperAdmin && (
-              <Button variant="ghost" size="sm" onClick={() => navigate('/admin/homepage-images')} className="hidden sm:flex">
-                <Image className="w-4 h-4 mr-1.5" /> Homepage Images
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" onClick={() => navigate('/gallery')} className="hidden sm:flex">
-              <Film className="w-4 h-4 mr-1.5" /> Gallery
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin/events')} className="hidden sm:flex">
-              <Calendar className="w-4 h-4 mr-1.5" /> Events
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowPasswordDialog(true)}>
-              <Key className="w-4 h-4" />
-              <span className="hidden sm:inline ml-1.5">Password</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline ml-1.5">Logout</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline ml-1.5">Settings</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+                <DropdownMenuItem onClick={toggleTheme} className="gap-2 cursor-pointer">
+                  {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Admin</DropdownMenuLabel>
+                {isSuperAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin/manage-admins')} className="gap-2 cursor-pointer">
+                    <Users className="w-4 h-4" /> Manage Admins
+                  </DropdownMenuItem>
+                )}
+                {isSuperAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin/homepage-images')} className="gap-2 cursor-pointer">
+                    <Image className="w-4 h-4" /> Homepage Images
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => navigate('/gallery')} className="gap-2 cursor-pointer">
+                  <Film className="w-4 h-4" /> Gallery
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/admin/events')} className="gap-2 cursor-pointer">
+                  <Calendar className="w-4 h-4" /> Events
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowPasswordDialog(true)} className="gap-2 cursor-pointer">
+                  <Key className="w-4 h-4" /> Change Password
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="w-4 h-4" /> Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
