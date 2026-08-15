@@ -364,13 +364,12 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <img 
-              src="/uccp-logo.png"
+              src="/uccp-logo-transparent.png"
               alt="UCCP Logo"
               className="h-12 w-12 object-contain"
             />
             <div className="text-left">
               <p className="font-bold">UCCP-Good Samaritan Church</p>
-              <p className="text-sm text-slate-400">Founded 1948</p>
             </div>
           </div>
           <p className="text-slate-400 text-sm mb-3">
