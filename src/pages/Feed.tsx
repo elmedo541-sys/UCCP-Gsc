@@ -218,8 +218,8 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
         <div className="flex justify-center py-2"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
       ) : (
         <div className="space-y-2">
-          {comments.map(c => (
-            <div key={c.id} className="flex gap-2">
+          {comments.map((c, i) => (
+            <div key={c.id} className="flex gap-2 animate-feed-comment-item" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
               <Avatar picture={c.author_picture} name={c.author_name} size="sm" />
               <div className="flex-1 bg-muted rounded-2xl px-3 py-2">
                 <p className="text-xs font-semibold text-foreground">{c.author_name}</p>
@@ -260,25 +260,35 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
 
 /* ─── Post Card ──────────────────────────────────────────────────────────── */
 function PostCard({
-  post, personId, onLikeToggle, onDelete,
+  post, personId, onLikeToggle, onDelete, index = 0,
 }: {
   post: Post;
   personId: string | null;
   onLikeToggle: (postId: string, liked: boolean) => void;
   onDelete: (postId: string) => void;
+  index?: number;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [justLiked, setJustLiked] = useState(false);
 
   const handleLike = async () => {
     if (!personId || liking) return;
     setLiking(true);
+    const willLike = !post.user_liked;
     onLikeToggle(post.id, post.user_liked);
+    if (willLike) {
+      setJustLiked(true);
+      setTimeout(() => setJustLiked(false), 450);
+    }
     setLiking(false);
   };
 
   return (
-    <div className={`bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${post.is_birthday_post ? 'border-yellow-300 dark:border-yellow-700' : ''}`}>
+    <div
+      className={`animate-feed-post bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${post.is_birthday_post ? 'border-yellow-300 dark:border-yellow-700' : ''}`}
+      style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+    >
       {post.is_birthday_post && (
         <div className="bg-gradient-to-r from-yellow-400 to-pink-500 px-4 py-1.5 flex items-center gap-2">
           <Cake className="w-4 h-4 text-white" />
@@ -326,30 +336,34 @@ function PostCard({
           <button
             onClick={handleLike}
             disabled={!personId}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all active:scale-90
               ${post.user_liked
                 ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40'
                 : 'text-muted-foreground hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30'
               }`}
           >
-            <Heart className={`w-4 h-4 transition-transform ${post.user_liked ? 'fill-rose-500 scale-110' : ''}`} />
-            <span>{post.like_count}</span>
+            <Heart className={`w-4 h-4 transition-transform ${post.user_liked ? 'fill-rose-500 scale-110' : ''} ${justLiked ? 'animate-feed-like-pop' : ''}`} />
+            <span className="tabular-nums">{post.like_count}</span>
           </button>
 
           <button
             onClick={() => setShowComments(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all active:scale-90
               ${showComments
                 ? 'text-blue-500 bg-blue-50 dark:bg-blue-950/30'
                 : 'text-muted-foreground hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30'
               }`}
           >
-            <MessageCircle className="w-4 h-4" />
-            <span>{post.comment_count}</span>
+            <MessageCircle className={`w-4 h-4 transition-transform duration-300 ${showComments ? 'scale-110' : ''}`} />
+            <span className="tabular-nums">{post.comment_count}</span>
           </button>
         </div>
 
-        {showComments && <CommentSection postId={post.id} personId={personId} />}
+        {showComments && (
+          <div className="animate-feed-comments">
+            <CommentSection postId={post.id} personId={personId} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -827,7 +841,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
               <div className="flex items-center justify-between pt-0.5">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-primary/10"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-primary/10 active:scale-95"
                 >
                   <ImageIcon className="w-4 h-4" />
                   <span>Photo</span>
@@ -843,7 +857,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                   onClick={handlePost}
                   disabled={!content.trim() || posting}
                   size="sm"
-                  className="rounded-full px-5 shadow-sm"
+                  className="rounded-full px-5 shadow-sm active:scale-95 transition-transform"
                 >
                   {posting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <Send className="w-4 h-4 mr-1.5" />}
                   Post
@@ -871,7 +885,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
             <p className="text-sm text-muted-foreground">Loading feed…</p>
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+          <div className="animate-feed-fade-in flex flex-col items-center justify-center py-20 gap-3 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
               <MessageCircle className="w-8 h-8 text-muted-foreground/50" />
             </div>
@@ -881,13 +895,14 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
             </p>
           </div>
         ) : (
-          posts.map(post => (
+          posts.map((post, i) => (
             <PostCard
               key={post.id}
               post={post}
               personId={personId}
               onLikeToggle={handleLikeToggle}
               onDelete={handleDelete}
+              index={i}
             />
           ))
         )}
