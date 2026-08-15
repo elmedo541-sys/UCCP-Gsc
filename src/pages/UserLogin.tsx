@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import InstallAppModal from '@/components/InstallAppModal';
+import { canShowInstallPrompt, isStandalone, isIOS } from '@/lib/installPrompt';
 
 export default function UserLogin() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function UserLogin() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [shake, setShake] = useState(false);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const triggerShake = () => {
@@ -32,7 +35,20 @@ export default function UserLogin() {
       const { error } = await signIn(username, password);
       if (error) throw error;
       setSuccess(true);
-      setTimeout(() => navigate('/feed'), 900);
+
+      // Offer to install the app once per device, only if it isn't
+      // already installed and the browser can realistically support it.
+      const alreadyOffered = localStorage.getItem('install_prompt_shown');
+      const eligible = !isStandalone() && !alreadyOffered && (canShowInstallPrompt() || isIOS());
+
+      setTimeout(() => {
+        if (eligible) {
+          localStorage.setItem('install_prompt_shown', '1');
+          setShowInstallPrompt(true);
+        } else {
+          navigate('/feed');
+        }
+      }, 900);
     } catch (error) {
       triggerShake();
       let errorMessage = 'Invalid username or password.';
@@ -233,6 +249,11 @@ export default function UserLogin() {
           </div>
         </div>
       </div>
+
+      <InstallAppModal
+        open={showInstallPrompt}
+        onClose={() => { setShowInstallPrompt(false); navigate('/feed'); }}
+      />
     </div>
   );
 }
