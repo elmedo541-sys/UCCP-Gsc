@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import AdminSupportPanel from '@/components/AdminSupportPanel';
+import AdminAddMemberDialog from '@/components/AdminAddMemberDialog';
 import {
-  LogOut, Loader2, Eye, X, Edit, Save, FileDown, Key,
+  LogOut, Loader2, Eye, X, Edit, Save, FileDown, Key, UserPlus,
   Users, Image, Search, Calendar, UserCheck, TrendingUp,
   ShieldCheck, Cake, ChevronRight, LayoutDashboard, Heart, Film, Clock, Activity,
 } from 'lucide-react';
@@ -140,9 +141,10 @@ function StatCard({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { isAdmin, isSuperAdmin, isEditor, role, loading: authLoading, signOut } = useAuth();
+  const { isAdmin, isSuperAdmin, isEditor, canRegisterMembers, role, loading: authLoading, signOut } = useAuth();
   const { toast } = useToast();
 
+  const [showAddMember, setShowAddMember] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
   const [allUpcomingBirthdays, setAllUpcomingBirthdays] = useState<{ person_name: string; days_until: number; birthday_date: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -793,6 +795,11 @@ export default function AdminDashboard() {
                     className="pl-9 w-56 h-9 text-sm"
                   />
                 </div>
+                {(isSuperAdmin || canRegisterMembers) && (
+                  <Button onClick={() => setShowAddMember(true)} size="sm" className="gap-1.5 h-9">
+                    <UserPlus className="w-4 h-4" /> Add Member
+                  </Button>
+                )}
                 {(isSuperAdmin || isEditor) && (
                   <Button onClick={handleExportToExcel} variant="outline" size="sm" className="gap-1.5 h-9">
                     <FileDown className="w-4 h-4" /> Export
@@ -913,7 +920,6 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -968,7 +974,6 @@ export default function AdminDashboard() {
                 )}
               </TableBody>
             </Table>
-            </div>
           </CardContent>
         </Card>
       </section>
@@ -1231,6 +1236,12 @@ export default function AdminDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AdminAddMemberDialog
+        open={showAddMember}
+        onOpenChange={setShowAddMember}
+        onCreated={fetchPeople}
+      />
 
     </div>
   );

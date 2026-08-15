@@ -8,12 +8,13 @@ const corsHeaders = {
 interface LoginRequest {
   username: string;
   password: string;
-  action: 'login' | 'signup' | 'create_admin' | 'delete_admin' | 'list_admins';
+  action: 'login' | 'signup' | 'create_admin' | 'delete_admin' | 'list_admins' | 'update_permissions' | 'whoami';
   token?: string;
   new_username?: string;
   new_password?: string;
   new_role?: 'viewer' | 'editor';
   target_admin_id?: string;
+  can_register_members?: boolean;
 }
 
 async function verifySuperAdmin(supabase: ReturnType<typeof createClient>, token: string): Promise<{ valid: boolean; adminId?: string }> {
@@ -64,13 +65,99 @@ Deno.serve(async (req) => {
 
       const { data, error } = await supabase
         .from('admin_credentials')
-        .select('id, username, role, created_at')
+        .select('id, username, role, can_register_members, created_at')
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
       return new Response(
         JSON.stringify({ success: true, admins: data }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ── WHOAMI (any valid admin session — verifies token + returns role/permissions) ──
+    if (action === 'whoami') {
+      const now = new Date().toISOString();
+      const { data: sessionRow, error: sessionErr } = await supabase
+        .from('admin_sessions')
+        .select('admin_id, expires_at')
+        .eq('token', body.token ?? '')
+        .gt('expires_at', now)
+        .maybeSingle();
+
+      if (sessionErr || !sessionRow) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid or expired session' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data: cred, error: credErr } = await supabase
+        .from('admin_credentials')
+        .select('id, username, role, can_register_members')
+        .eq('id', sessionRow.admin_id)
+        .maybeSingle();
+
+      if (credErr || !cred) {
+        return new Response(
+          JSON.stringify({ error: 'Admin not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          admin_id: cred.id,
+          username: cred.username,
+          role: cred.role,
+          can_register_members: !!cred.can_register_members,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ── UPDATE PERMISSIONS (super admin only) ───────────────────────────────
+    if (action === 'update_permissions') {
+      const { valid } = await verifySuperAdmin(supabase, body.token ?? '');
+      if (!valid) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { target_admin_id, can_register_members } = body;
+      if (!target_admin_id || typeof can_register_members !== 'boolean') {
+        return new Response(
+          JSON.stringify({ error: 'target_admin_id and can_register_members are required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data: target } = await supabase
+        .from('admin_credentials')
+        .select('role')
+        .eq('id', target_admin_id)
+        .maybeSingle();
+
+      if (target?.role === 'super_admin') {
+        return new Response(
+          JSON.stringify({ error: 'Super admins already have full access — no permission change needed' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { error: updateError } = await supabase
+        .from('admin_credentials')
+        .update({ can_register_members })
+        .eq('id', target_admin_id);
+
+      if (updateError) throw updateError;
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Permissions updated successfully' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -258,12 +345,19 @@ Deno.serve(async (req) => {
         console.error('Session creation error:', sessionError);
       }
 
+      const { data: credRow } = await supabase
+        .from('admin_credentials')
+        .select('can_register_members')
+        .eq('id', result.admin_id)
+        .maybeSingle();
+
       return new Response(
         JSON.stringify({
           success: true,
           session_token: sessionToken,
           admin_id: result.admin_id,
           role: result.role,
+          can_register_members: !!credRow?.can_register_members,
           expires_at: expiresAt.toISOString(),
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

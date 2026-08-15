@@ -16,6 +16,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import {
   ChevronLeft, Loader2, Plus, Trash2, ShieldCheck, UserCog, Eye, Users,
@@ -25,6 +26,7 @@ interface AdminRecord {
   id: string;
   username: string;
   role: 'super_admin' | 'editor' | 'viewer';
+  can_register_members?: boolean;
   created_at: string;
 }
 
@@ -74,6 +76,7 @@ export default function AdminManagement() {
 
   const [deleteTarget, setDeleteTarget] = useState<AdminRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const fetchAdmins = useCallback(async () => {
     const token = getToken();
@@ -172,6 +175,38 @@ export default function AdminManagement() {
     }
   };
 
+  const handleTogglePermission = async (admin: AdminRecord, next: boolean) => {
+    const token = getToken();
+    if (!token) return;
+
+    setTogglingId(admin.id);
+    // Optimistic update
+    setAdmins(prev => prev.map(a => a.id === admin.id ? { ...a, can_register_members: next } : a));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
+        body: { action: 'update_permissions', token, target_admin_id: admin.id, can_register_members: next },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: next ? 'Permission granted' : 'Permission removed',
+        description: `${admin.username} can ${next ? 'now' : 'no longer'} add/register new members.`,
+      });
+    } catch (error) {
+      // Revert on failure
+      setAdmins(prev => prev.map(a => a.id === admin.id ? { ...a, can_register_members: !next } : a));
+      toast({
+        title: 'Failed to update permission',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
@@ -225,6 +260,7 @@ export default function AdminManagement() {
                   <TableRow>
                     <TableHead>Username</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Can Add Members</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -238,6 +274,20 @@ export default function AdminManagement() {
                           {ROLE_ICON[admin.role]}
                           {admin.role.replace('_', ' ')}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {admin.role === 'super_admin' ? (
+                          <span className="text-xs text-muted-foreground">Always allowed</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={!!admin.can_register_members}
+                              disabled={togglingId === admin.id}
+                              onCheckedChange={(checked) => handleTogglePermission(admin, checked)}
+                            />
+                            {togglingId === admin.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(admin.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}

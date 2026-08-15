@@ -15,6 +15,7 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isEditor: boolean;
   isViewer: boolean;
+  canRegisterMembers: boolean;
   loading: boolean;
   signIn: (username: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (username: string, password: string) => Promise<{ error: Error | null }>;
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [adminId, setAdminId] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canRegisterMembers, setCanRegisterMembers] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isSuperAdmin = role === 'super_admin';
@@ -51,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const session: AdminSession = JSON.parse(sessionData);
-      
+
       // Check if session is expired
       if (new Date(session.expiresAt) < new Date()) {
         localStorage.removeItem(SESSION_KEY);
@@ -59,20 +61,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Verify session with backend
-      const { data, error } = await supabase.rpc('verify_admin_session', {
-        p_token: session.token,
+      // Verify session with backend and fetch fresh role/permissions
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
+        body: { action: 'whoami', token: session.token },
       });
 
-      if (error || !data?.[0]?.is_valid) {
+      if (error || data?.error) {
         localStorage.removeItem(SESSION_KEY);
         setIsAdmin(false);
         setAdminId(null);
         setRole(null);
+        setCanRegisterMembers(false);
       } else {
         setIsAdmin(true);
         setAdminId(session.adminId);
-        setRole(data[0].role || session.role || 'super_admin');
+        setRole(data.role || session.role || 'super_admin');
+        setCanRegisterMembers(!!data.can_register_members);
       }
     } catch (error) {
       console.error('Error checking session:', error);
@@ -105,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setAdminId(data.admin_id);
       setRole(data.role || 'super_admin');
+      setCanRegisterMembers(!!data.can_register_members);
       setIsAdmin(true);
 
       return { error: null };
@@ -136,10 +141,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAdminId(null);
     setRole(null);
     setIsAdmin(false);
+    setCanRegisterMembers(false);
   };
 
   return (
-    <AuthContext.Provider value={{ adminId, role, isAdmin, isSuperAdmin, isEditor, isViewer, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ adminId, role, isAdmin, isSuperAdmin, isEditor, isViewer, canRegisterMembers, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
