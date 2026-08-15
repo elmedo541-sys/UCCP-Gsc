@@ -267,7 +267,7 @@ export default function AdminDashboard() {
       .from('user_activity_log')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(20);
     setActivityLogs(data || []);
   };
 
@@ -920,8 +920,9 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-card z-10">
                 <TableRow>
                   <TableHead className="pl-6">Member Name</TableHead>
                   <TableHead>Username</TableHead>
@@ -974,6 +975,7 @@ export default function AdminDashboard() {
                 )}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       </section>
