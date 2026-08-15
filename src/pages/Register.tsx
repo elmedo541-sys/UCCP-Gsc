@@ -186,7 +186,7 @@ export default function Register() {
       className="min-h-screen flex items-center justify-center p-4 py-10 relative overflow-hidden"
       style={{
         backgroundImage: 'url(https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/c91049a2-add2-40.png)',
-        backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
+        backgroundSize: 'cover', backgroundPosition: 'center',
       }}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
