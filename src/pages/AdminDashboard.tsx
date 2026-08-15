@@ -513,7 +513,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard
             label="All Members" value={people.length}
-            icon={<Users className="w-5 h-5" />} color="bg-primary"
+            icon={<Users className="w-5 h-5" />} color="bg-slate-700"
             active={organizationFilter === null}
             onClick={() => setOrganizationFilter(null)}
           />
