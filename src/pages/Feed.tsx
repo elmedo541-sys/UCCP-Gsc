@@ -797,7 +797,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
 
         {/* Create Post — logged in users only */}
         {isLoggedIn ? (
-        <div className="sticky top-16 z-20 bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary/40 transition-all">
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary/40 transition-all">
           <div className="flex gap-3 items-start">
             {userProfile && (
               <Avatar picture={userProfile.profile_picture} name={userProfile.full_name} />
