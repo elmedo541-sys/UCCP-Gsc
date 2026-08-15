@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageCircle, Send, ArrowLeft, User, ShieldCheck, Clock } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { MessageCircle, Send, ArrowLeft, User, ShieldCheck, Clock, Trash2 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SupportMessage {
@@ -34,6 +38,9 @@ export default function AdminSupportPanel() {
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
   const [loadingConvs, setLoadingConvs] = useState(true);
+  const [deleteConvId, setDeleteConvId] = useState<string | null>(null);
+  const [deleteMsgId, setDeleteMsgId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // ── Fetch conversations ────────────────────────────────────────────────────
@@ -158,6 +165,33 @@ export default function AdminSupportPanel() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(); }
   };
 
+  // ── Delete a single message ────────────────────────────────────────────────
+  const confirmDeleteMessage = async () => {
+    if (!deleteMsgId) return;
+    setDeleting(true);
+    const { error } = await supabase.from('support_messages').delete().eq('id', deleteMsgId);
+    setDeleting(false);
+    setDeleteMsgId(null);
+    if (!error) {
+      setMessages(prev => prev.filter(m => m.id !== deleteMsgId));
+      fetchConversations();
+    }
+  };
+
+  // ── Delete an entire conversation ──────────────────────────────────────────
+  const confirmDeleteConversation = async () => {
+    if (!deleteConvId) return;
+    setDeleting(true);
+    const { error } = await supabase.from('support_messages').delete().eq('conversation_id', deleteConvId);
+    setDeleting(false);
+    const wasActive = activeConv === deleteConvId;
+    setDeleteConvId(null);
+    if (!error) {
+      setConversations(prev => prev.filter(c => c.conversation_id !== deleteConvId));
+      if (wasActive) { setActiveConv(null); setMessages([]); }
+    }
+  };
+
   const totalUnread = conversations.reduce((s, c) => s + c.unread_count, 0);
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -209,7 +243,7 @@ export default function AdminSupportPanel() {
                   <li
                     key={conv.conversation_id}
                     onClick={() => openConversation(conv.conversation_id)}
-                    className="flex items-start gap-3 px-6 py-4 cursor-pointer hover:bg-muted/40 transition-colors"
+                    className="group flex items-start gap-3 px-6 py-4 cursor-pointer hover:bg-muted/40 transition-colors"
                   >
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0 mt-0.5">
                       {conv.sender_name[0]?.toUpperCase()}
@@ -228,6 +262,13 @@ export default function AdminSupportPanel() {
                         {conv.unread_count}
                       </Badge>
                     )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteConvId(conv.conversation_id); }}
+                      title="Delete conversation"
+                      className="opacity-0 group-hover:opacity-100 shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </li>
                 );
               })}
@@ -241,7 +282,7 @@ export default function AdminSupportPanel() {
               {messages.map(msg => (
                 <div
                   key={msg.id}
-                  className={`flex flex-col gap-0.5 ${msg.sender_type === 'admin' ? 'items-end' : 'items-start'}`}
+                  className={`group flex flex-col gap-0.5 ${msg.sender_type === 'admin' ? 'items-end' : 'items-start'}`}
                 >
                   <div className={`flex items-center gap-1.5 mb-0.5 ${msg.sender_type === 'admin' ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
@@ -253,12 +294,21 @@ export default function AdminSupportPanel() {
                       {msg.sender_type === 'admin' ? 'Admin' : (msg.sender_name || 'User')}
                     </span>
                   </div>
-                  <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
-                    msg.sender_type === 'admin'
-                      ? 'bg-primary text-primary-foreground rounded-br-sm'
-                      : 'bg-card border border-border text-foreground rounded-bl-sm'
-                  }`}>
-                    {msg.message}
+                  <div className={`flex items-center gap-1.5 ${msg.sender_type === 'admin' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                      msg.sender_type === 'admin'
+                        ? 'bg-primary text-primary-foreground rounded-br-sm'
+                        : 'bg-card border border-border text-foreground rounded-bl-sm'
+                    }`}>
+                      {msg.message}
+                    </div>
+                    <button
+                      onClick={() => setDeleteMsgId(msg.id)}
+                      title="Delete message"
+                      className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
                   <span className="text-[10px] text-muted-foreground px-1">
                     {new Date(msg.created_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true })}
@@ -291,6 +341,42 @@ export default function AdminSupportPanel() {
           </div>
         )}
       </CardContent>
+
+      {/* Delete message confirmation */}
+      <AlertDialog open={!!deleteMsgId} onOpenChange={(o) => !o && setDeleteMsgId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this message?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the message. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteMessage} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? 'Deleting…' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete conversation confirmation */}
+      <AlertDialog open={!!deleteConvId} onOpenChange={(o) => !o && setDeleteConvId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the entire conversation and all its messages. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteConversation} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? 'Deleting…' : 'Delete conversation'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
