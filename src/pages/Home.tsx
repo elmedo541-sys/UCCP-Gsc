@@ -110,11 +110,11 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <img 
              src="/uccp-logo.png"
-              alt="United Church of Christ Logo"
+              alt="UCCP-Good Samaritan Church Logo"
               className="h-16 w-16 object-contain"
             />
             <div>
-              <h1 className="text-lg font-bold text-slate-800">United Church of Christ In The Philippines</h1>
+              <h1 className="text-lg font-bold text-slate-800">UCCP-Good Samaritan Church</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -369,7 +369,7 @@ export default function Home() {
               className="h-12 w-12 object-contain"
             />
             <div className="text-left">
-              <p className="font-bold">United Church of Christ in The Philippines</p>
+              <p className="font-bold">UCCP-Good Samaritan Church</p>
               <p className="text-sm text-slate-400">Founded 1948</p>
             </div>
           </div>
