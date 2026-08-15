@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserAuth } from '@/hooks/useUserAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -260,13 +261,14 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
 
 /* ─── Post Card ──────────────────────────────────────────────────────────── */
 function PostCard({
-  post, personId, onLikeToggle, onDelete, index = 0,
+  post, personId, onLikeToggle, onDelete, index = 0, canModerate = false,
 }: {
   post: Post;
   personId: string | null;
   onLikeToggle: (postId: string, liked: boolean) => void;
   onDelete: (postId: string) => void;
   index?: number;
+  canModerate?: boolean;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [liking, setLiking] = useState(false);
@@ -306,9 +308,10 @@ function PostCard({
               <p className="text-xs text-muted-foreground" title={fullDate(post.created_at)}>{timeAgo(post.created_at)}</p>
             </div>
           </div>
-          {personId === post.person_id && (
+          {(personId === post.person_id || canModerate) && (
             <button
               onClick={() => onDelete(post.id)}
+              title={personId === post.person_id ? 'Delete post' : 'Delete post (admin)'}
               className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10"
             >
               <Trash2 className="w-4 h-4" />
@@ -373,6 +376,7 @@ function PostCard({
 export default function Feed() {
   const navigate = useNavigate();
   const { personId, isLoggedIn, loading: authLoading } = useUserAuth();
+  const { isSuperAdmin } = useAuth();
   const { toast } = useToast();
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -903,6 +907,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
               onLikeToggle={handleLikeToggle}
               onDelete={handleDelete}
               index={i}
+              canModerate={isSuperAdmin}
             />
           ))
         )}
