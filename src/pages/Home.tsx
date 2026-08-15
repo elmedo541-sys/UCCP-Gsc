@@ -106,18 +106,18 @@ export default function Home() {
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
       {/* Header with Logo */}
       <header className="w-full bg-white/80 backdrop-blur-sm shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 justify-center">
             <img 
              src="/uccp-logo.png"
               alt="UCCP-Good Samaritan Church Logo"
-              className="h-16 w-16 object-contain"
+              className="h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0"
             />
             <div>
-              <h1 className="text-lg font-bold text-slate-800">UCCP-Good Samaritan Church</h1>
+              <h1 className="text-base sm:text-lg font-bold text-slate-800 text-center sm:text-left leading-tight">UCCP-Good Samaritan Church</h1>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-center flex-wrap">
             <Button
               variant="outline"
               size="sm"
