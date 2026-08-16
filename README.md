@@ -1,76 +1,45 @@
-# Welcome to your Enter project
+# UCCP-GSC
 
-[![Built with enter.pro](https://img.shields.io/badge/Build%20with-Enter.pro-FC5776?style=for-the-badge&labelColor=1F1F1F)](https://enter.pro)
+Church member registration, community feed, and admin portal for
+UCCP-Good Samaritan Church.
 
-*Automatically synced with your [enter.pro](https://enter.pro) workspace* 
+## Project structure
 
----
+```
+/frontend   React + Vite app (everything users and admins interact with)
+/backend    Supabase edge functions + SQL (server-side logic and database)
+```
 
-## Overview
+### /frontend
 
-This repository is automatically linked to your app on [enter.pro](https://enter.pro).  
-Every change you make in Enter will be reflected here — and any updates you push to this repo will sync back seamlessly.  
+The React SPA. This is what gets built and deployed to Vercel.
 
-Enter.pro helps you **build, edit, and deploy full-stack web apps by prompting**.  
-Just describe what you want — Enter turns ideas into production-ready code.
-
----
-
-## Project URLs
-
-**Live app:** https://652bedb5e34b4901a40fd8b9050efb08-latest.preview.enter.pro  
-**Edit & build in Enter:** https://enter.pro/project/652bedb5e34b4901a40fd8b9050efb08
-
-
----
-
-## Continue building
-
-Keep developing your app directly in [Enter.pro](https://enter.pro/project/652bedb5e34b4901a40fd8b9050efb08).  
-Prompt new features, refine the UI, or connect integrations — all changes are versioned and synced automatically to GitHub.
-
----
-
-## Local development
-
-Prefer to work locally? You can clone this repo and start developing right away:
-
-```bash
-# Step 1: Clone your project repository
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate into the project folder
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install all dependencies
-npm install
-
-# Step 4: Start the local development server
+```
+cd frontend
+npm install --legacy-peer-deps
 npm run dev
 ```
 
-Push your commits — Enter.pro will automatically detect and sync your latest changes.
+### /backend
 
----
-
-## Tech stack
-
-This project uses:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
----
+- `supabase/Functions/` — Supabase Edge Functions (Deno). These are
+  managed directly through the Supabase Dashboard (Edge Functions
+  tab) — moving them here does not change how they're deployed, it
+  just keeps a version-controlled copy alongside the rest of the
+  code for reference and future edits.
+- `sql/` — Numbered SQL files documenting database functions,
+  policies, and schema changes made directly in the Supabase SQL
+  Editor over time. These are historical record, not an automated
+  migration runner — run them manually in the SQL Editor if you
+  ever need to recreate them on a fresh database.
 
 ## Deployment
 
-To deploy, open your Enter.pro project and click "Publish"
+**Frontend (Vercel):** in the Vercel project settings, set
+**Root Directory** to `frontend`. `frontend/vercel.json` already
+contains the build command, output directory, and SPA rewrite rule.
 
-Your app will automatically build and go live at your production URL.
-
----
-
-✨ Keep prompting, keep building — Enter.pro handles the rest.
+**Backend (Supabase):** the database (tables, RLS policies, RPC
+functions) and Edge Functions live in your Supabase project and are
+managed through the Supabase Dashboard. `backend/sql/` is a reference
+copy, not a live sync.
