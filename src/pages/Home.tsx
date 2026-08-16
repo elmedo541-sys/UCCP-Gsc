@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
 import { useUserAuth } from "@/hooks/useUserAuth";
 import UserMenu from "@/components/UserMenu";
+import { useAppUpdateAvailable } from "@/hooks/useAppUpdateAvailable";
 
 interface HomepageImage {
   id: string;
@@ -33,6 +34,16 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [userProfile, setUserProfile] = useState<{ full_name: string; profile_picture: string | null } | null>(null);
+
+  // ── Logo update animation ──
+  const updateAvailable = useAppUpdateAvailable();
+  const [showUpdateAnim, setShowUpdateAnim] = useState(false);
+  useEffect(() => {
+    if (!updateAvailable) return;
+    setShowUpdateAnim(true);
+    const timer = setTimeout(() => window.location.reload(), 1200);
+    return () => clearTimeout(timer);
+  }, [updateAvailable]);
 
   // Fetch logged-in user's name/photo for the header menu
   useEffect(() => {
@@ -108,11 +119,16 @@ export default function Home() {
       <header className="w-full bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 sm:gap-4 justify-center">
-            <img 
-             src="/uccp-logo.png"
-              alt="UCCP-Good Samaritan Church Logo"
-              className="h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0"
-            />
+            <div className="relative inline-flex">
+              {showUpdateAnim && <span className="logo-update-ring" aria-hidden="true" />}
+              <img
+                src="/uccp-logo.png"
+                alt="UCCP-Good Samaritan Church Logo"
+                className={`h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0 ${
+                  showUpdateAnim ? 'animate-logo-updating' : 'animate-logo-breathe'
+                }`}
+              />
+            </div>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-slate-800 text-center sm:text-left leading-tight">UCCP-Good Samaritan Church</h1>
             </div>
