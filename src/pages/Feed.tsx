@@ -261,7 +261,7 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
 
 /* ─── Post Card ──────────────────────────────────────────────────────────── */
 function PostCard({
-  post, personId, onLikeToggle, onDelete, index = 0, canModerate = false,
+  post, personId, onLikeToggle, onDelete, index = 0, canModerate = false, onImageClick,
 }: {
   post: Post;
   personId: string | null;
@@ -269,6 +269,7 @@ function PostCard({
   onDelete: (postId: string) => void;
   index?: number;
   canModerate?: boolean;
+  onImageClick: (url: string) => void;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [liking, setLiking] = useState(false);
@@ -328,7 +329,8 @@ function PostCard({
             <img
               src={post.image_url}
               alt="Post image"
-              className="w-full max-h-[420px] object-cover"
+              onClick={() => onImageClick(post.image_url!)}
+              className="w-full max-h-[420px] object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
               loading="lazy"
             />
           </div>
@@ -388,12 +390,21 @@ export default function Feed() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [posting, setPosting] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showBirthdayModal, setShowBirthdayModal] = useState(false);
   const [birthdayName, setBirthdayName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [userProfile, setUserProfile] = useState<{ full_name: string; first_name: string; profile_picture: string | null } | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
+
+  /* ── Close lightbox on Escape ── */
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxImage(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxImage]);
 
   /* ── No redirect — allow read-only view for non-logged-in users ── */
 
@@ -908,6 +919,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
               onDelete={handleDelete}
               index={i}
               canModerate={isSuperAdmin}
+              onImageClick={setLightboxImage}
             />
           ))
         )}
@@ -915,6 +927,28 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
 
       <ChatSupportWidget />
       <MobileNavBar />
+
+      {/* Image lightbox */}
+      {lightboxImage && (
+        <div
+          onClick={() => setLightboxImage(null)}
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-feed-fade-in cursor-zoom-out"
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <img
+            src={lightboxImage}
+            alt="Full size"
+            onClick={e => e.stopPropagation()}
+            className="max-w-full max-h-full object-contain rounded-lg cursor-default"
+          />
+        </div>
+      )}
     </div>
   );
 }
