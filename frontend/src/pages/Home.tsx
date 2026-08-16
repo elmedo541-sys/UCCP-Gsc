@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, LogIn, BookOpen, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare } from "lucide-react";
+import { UserPlus, LogIn, BookOpen, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
 import { useUserAuth } from "@/hooks/useUserAuth";
 import UserMenu from "@/components/UserMenu";
 import { useAppUpdateAvailable } from "@/hooks/useAppUpdateAvailable";
+import InstallAppModal from "@/components/InstallAppModal";
+import { canShowInstallPrompt, isStandalone, isIOS } from "@/lib/installPrompt";
 
 interface HomepageImage {
   id: string;
@@ -45,6 +47,20 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setLogoTapped(false), 500);
   };
+
+  // ── Install app button ──
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [canInstall, setCanInstall] = useState(false);
+  useEffect(() => {
+    if (isStandalone()) return; // already installed — nothing to offer
+    if (isIOS()) { setCanInstall(true); return; } // no native event on iOS, show manual-steps button anyway
+    // Chrome/Android's install-readiness event can fire slightly after
+    // mount, so poll briefly rather than checking only once.
+    const check = () => { if (canShowInstallPrompt()) { setCanInstall(true); return true; } return false; };
+    if (check()) return;
+    const interval = setInterval(() => { if (check()) clearInterval(interval); }, 500);
+    return () => clearInterval(interval);
+  }, []);
   useEffect(() => {
     if (!updateAvailable) return;
     setShowUpdateAnim(true);
@@ -404,6 +420,17 @@ export default function Home() {
           <p className="text-slate-400 text-sm mb-3">
             © 2024 GSC Members Profile Registration. All rights reserved.
           </p>
+          {canInstall && (
+            <Button
+              size="sm"
+              onClick={() => setShowInstallModal(true)}
+              className="gap-1.5 mb-3"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download the App
+            </Button>
+          )}
+          <br />
           <Button
             variant="ghost"
             size="sm"
@@ -415,6 +442,7 @@ export default function Home() {
         </div>
       </footer>
       <ChatSupportWidget />
+      <InstallAppModal open={showInstallModal} onClose={() => setShowInstallModal(false)} />
     </div>
   );
 }
