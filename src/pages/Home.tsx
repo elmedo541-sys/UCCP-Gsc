@@ -122,7 +122,7 @@ export default function Home() {
             <div className="relative inline-flex">
               {showUpdateAnim && <span className="logo-update-ring" aria-hidden="true" />}
               <img
-                src="/uccp-logo.png"
+                src="/uccp-logo-transparent.png"
                 alt="UCCP-Good Samaritan Church Logo"
                 className={`h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0 ${
                   showUpdateAnim ? 'animate-logo-updating' : 'animate-logo-breathe'
