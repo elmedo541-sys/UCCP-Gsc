@@ -38,6 +38,13 @@ export default function Home() {
   // ── Logo update animation ──
   const updateAvailable = useAppUpdateAvailable();
   const [showUpdateAnim, setShowUpdateAnim] = useState(false);
+  const [logoTapped, setLogoTapped] = useState(false);
+
+  const handleLogoClick = () => {
+    setLogoTapped(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => setLogoTapped(false), 500);
+  };
   useEffect(() => {
     if (!updateAvailable) return;
     setShowUpdateAnim(true);
@@ -119,16 +126,22 @@ export default function Home() {
       <header className="w-full bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 sm:gap-4 justify-center">
-            <div className="relative inline-flex">
+            <button
+              type="button"
+              onClick={handleLogoClick}
+              aria-label="UCCP-Good Samaritan Church home"
+              className="relative inline-flex active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-full"
+            >
               {showUpdateAnim && <span className="logo-update-ring" aria-hidden="true" />}
+              {logoTapped && !showUpdateAnim && <span className="logo-tap-ring" aria-hidden="true" />}
               <img
                 src="/uccp-logo-transparent.png"
                 alt="UCCP-Good Samaritan Church Logo"
-                className={`h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0 ${
-                  showUpdateAnim ? 'animate-logo-updating' : 'animate-logo-breathe'
+                className={`h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0 pointer-events-none ${
+                  showUpdateAnim ? 'animate-logo-updating' : logoTapped ? 'animate-logo-tap' : 'animate-logo-breathe'
                 }`}
               />
-            </div>
+            </button>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-slate-800 text-center sm:text-left leading-tight">UCCP-Good Samaritan Church</h1>
             </div>
