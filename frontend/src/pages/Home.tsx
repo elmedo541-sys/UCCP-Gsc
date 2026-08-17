@@ -9,7 +9,7 @@ import { useUserAuth } from "@/hooks/useUserAuth";
 import UserMenu from "@/components/UserMenu";
 import { useAppUpdateAvailable } from "@/hooks/useAppUpdateAvailable";
 import InstallAppModal from "@/components/InstallAppModal";
-import { canShowInstallPrompt, isStandalone, isIOS } from "@/lib/installPrompt";
+import { isStandalone } from "@/lib/installPrompt";
 
 interface HomepageImage {
   id: string;
@@ -50,16 +50,9 @@ export default function Home() {
 
   // ── Install app button ──
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [canInstall, setCanInstall] = useState(false);
+  const [alreadyInstalled, setAlreadyInstalled] = useState(false);
   useEffect(() => {
-    if (isStandalone()) return; // already installed — nothing to offer
-    if (isIOS()) { setCanInstall(true); return; } // no native event on iOS, show manual-steps button anyway
-    // Chrome/Android's install-readiness event can fire slightly after
-    // mount, so poll briefly rather than checking only once.
-    const check = () => { if (canShowInstallPrompt()) { setCanInstall(true); return true; } return false; };
-    if (check()) return;
-    const interval = setInterval(() => { if (check()) clearInterval(interval); }, 500);
-    return () => clearInterval(interval);
+    setAlreadyInstalled(isStandalone()); // hide only if already installed
   }, []);
   useEffect(() => {
     if (!updateAvailable) return;
@@ -420,7 +413,7 @@ export default function Home() {
           <p className="text-slate-400 text-sm mb-3">
             © 2024 GSC Members Profile Registration. All rights reserved.
           </p>
-          {canInstall && (
+          {!alreadyInstalled && (
             <Button
               size="sm"
               onClick={() => setShowInstallModal(true)}
