@@ -301,6 +301,7 @@ export type Database = {
           description: string | null
           file_type: string
           file_url: string
+          folder_id: string | null
           id: string
           organization: string
           title: string | null
@@ -311,6 +312,7 @@ export type Database = {
           description?: string | null
           file_type: string
           file_url: string
+          folder_id?: string | null
           id?: string
           organization: string
           title?: string | null
@@ -321,10 +323,43 @@ export type Database = {
           description?: string | null
           file_type?: string
           file_url?: string
+          folder_id?: string | null
           id?: string
           organization?: string
           title?: string | null
           uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_gallery_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gallery_folders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          organization: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          organization: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          organization?: string
         }
         Relationships: []
       }
