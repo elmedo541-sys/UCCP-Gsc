@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Upload, X, Play, Image as ImageIcon, Video, Loader2,
-  Trash2, ChevronLeft, ChevronRight, Lock,
+  Trash2, ChevronLeft, ChevronRight, Lock, Folder, FolderPlus, Plus,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -23,6 +23,15 @@ interface MediaItem {
   title: string | null;
   description: string | null;
   uploaded_by: string | null;
+  created_at: string;
+  folder_id: string | null;
+}
+
+interface GalleryFolder {
+  id: string;
+  organization: string;
+  name: string;
+  created_by: string | null;
   created_at: string;
 }
 
@@ -56,6 +65,10 @@ interface GalleryPanelProps {
   canUpload: boolean;
   defaultUploaderName?: string;
   canDelete?: boolean;
+  /** The logged-in member's own organization (e.g. 'UCM'). Folder
+   *  creation and folder-scoped uploads for an organization's tab are
+   *  only offered to members whose own organization matches that tab. */
+  memberOrganization?: string | null;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -63,6 +76,7 @@ export default function GalleryPanel({
   canUpload,
   defaultUploaderName = '',
   canDelete = false,
+  memberOrganization = null,
 }: GalleryPanelProps) {
   const { toast } = useToast();
 
@@ -71,12 +85,22 @@ export default function GalleryPanel({
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  // Folders
+  const [folders, setFolders] = useState<GalleryFolder[]>([]);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [showCreateFolder, setShowCreateFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [creatingFolder, setCreatingFolder] = useState(false);
+
   // Upload modal
   const [showUpload, setShowUpload] = useState(false);
   const [uploadOrg, setUploadOrg] = useState('');
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadDescription, setUploadDescription] = useState('');
   const [uploadBy, setUploadBy] = useState(defaultUploaderName);
+  // When set, the upload modal is "locked" to this organization/folder
+  // (e.g. uploading into a specific folder) and hides the org picker.
+  const [uploadContext, setUploadContext] = useState<{ organization: string; folderId: string | null } | null>(null);
 
   // ✅ BATCH UPLOAD STATE
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
@@ -87,15 +111,29 @@ export default function GalleryPanel({
   // Lightbox
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
+  // Reset the open folder whenever the org tab changes.
+  useEffect(() => { setActiveFolderId(null); }, [activeTab]);
+
   // ── Derived ────────────────────────────────────────────────────────────────
+  const orgMedia = activeTab === 'ALL' ? media : media.filter(m => m.organization === activeTab);
+  const orgFolders = folders.filter(f => f.organization === activeTab);
+  const activeFolder = activeFolderId ? folders.find(f => f.id === activeFolderId) ?? null : null;
+
+  // Whichever flat grid is currently visible — used for both rendering
+  // and lightbox prev/next navigation, so they always stay in sync.
   const filtered = activeTab === 'ALL'
     ? media
-    : media.filter(m => m.organization === activeTab);
+    : activeFolderId
+      ? orgMedia.filter(m => m.folder_id === activeFolderId)
+      : orgMedia.filter(m => !m.folder_id);
 
   const lightboxItem = lightboxIdx !== null ? filtered[lightboxIdx] : null;
 
+  // Can the logged-in member manage folders/uploads for a given org?
+  const canManageOrg = (org: string) => canUpload && !!memberOrganization && memberOrganization === org;
+
   // ── Fetch ──────────────────────────────────────────────────────────────────
-  useEffect(() => { fetchMedia(); }, []);
+  useEffect(() => { fetchMedia(); fetchFolders(); }, []);
 
   const fetchMedia = async () => {
     setLoading(true);
@@ -106,6 +144,37 @@ export default function GalleryPanel({
 
     if (!error) setMedia((data || []) as MediaItem[]);
     setLoading(false);
+  };
+
+  const fetchFolders = async () => {
+    const { data, error } = await supabase
+      .from('gallery_folders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error) setFolders((data || []) as GalleryFolder[]);
+  };
+
+  // ── CREATE FOLDER ──────────────────────────────────────────────────────────
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) {
+      toast({ title: 'Folder name required', variant: 'destructive' });
+      return;
+    }
+    setCreatingFolder(true);
+    const { error } = await supabase.from('gallery_folders').insert({
+      organization: activeTab,
+      name: newFolderName.trim(),
+      created_by: uploadBy.trim() || defaultUploaderName || null,
+    });
+    setCreatingFolder(false);
+    if (error) {
+      toast({ title: 'Could not create folder', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Folder created' });
+    setShowCreateFolder(false);
+    setNewFolderName('');
+    fetchFolders();
   };
 
   // ── FILE CHANGE (BATCH) ───────────────────────────────────────────────────
@@ -122,6 +191,7 @@ export default function GalleryPanel({
     setUploadTitle('');
     setUploadDescription('');
     setUploadBy(defaultUploaderName);
+    setUploadContext(null);
 
     setUploadFiles([]);
     setUploadPreviews([]);
@@ -129,9 +199,17 @@ export default function GalleryPanel({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const openUpload = (context?: { organization: string; folderId: string | null }) => {
+    setUploadContext(context ?? null);
+    setShowUpload(true);
+  };
+
   // ── UPLOAD (BATCH SUPABASE) ───────────────────────────────────────────────
   const handleUpload = async () => {
-    if (!uploadFiles.length || !uploadOrg) {
+    const org = uploadContext?.organization || uploadOrg;
+    const folderId = uploadContext?.folderId ?? null;
+
+    if (!uploadFiles.length || !org) {
       toast({
         title: 'Missing info',
         description: 'Please select an organization and files.',
@@ -164,7 +242,7 @@ export default function GalleryPanel({
       const uploads = await Promise.all(
         uploadFiles.map(async (file) => {
           const ext = file.name.split('.').pop();
-          const path = `${uploadOrg}/${Date.now()}-${Math.random()
+          const path = `${org}/${Date.now()}-${Math.random()
             .toString(36)
             .slice(2)}.${ext}`;
 
@@ -181,12 +259,13 @@ export default function GalleryPanel({
             .getPublicUrl(path);
 
           return {
-            organization: uploadOrg,
+            organization: org,
             file_url: urlData.publicUrl,
             file_type: file.type.startsWith('video') ? 'video' : 'image',
             title: uploadTitle.trim(),
             description: uploadDescription.trim() || null,
             uploaded_by: uploadBy.trim(),
+            folder_id: folderId,
           };
         })
       );
@@ -236,7 +315,7 @@ export default function GalleryPanel({
     }
   };
 
-  // ── RENDER (UNCHANGED UI except upload section) ────────────────────────────
+  // ── RENDER ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
 
@@ -272,7 +351,7 @@ export default function GalleryPanel({
         </div>
 
         {canUpload ? (
-          <Button onClick={() => setShowUpload(true)} size="sm">
+          <Button onClick={() => openUpload()} size="sm">
             <Upload className="w-3.5 h-3.5" /> Upload Media
           </Button>
         ) : (
@@ -283,6 +362,109 @@ export default function GalleryPanel({
         )}
       </div>
 
+      {/* ── Folder view (organization tabs only) ── */}
+      {activeTab !== 'ALL' && (
+        <div className="space-y-4">
+          {activeFolderId && activeFolder ? (
+            /* Inside a folder */
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <button
+                onClick={() => setActiveFolderId(null)}
+                className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <Folder className="w-4 h-4" />
+                {activeFolder.name}
+              </button>
+              {canManageOrg(activeFolder.organization) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openUpload({ organization: activeFolder.organization, folderId: activeFolder.id })}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Photo
+                </Button>
+              )}
+            </div>
+          ) : (
+            /* Folder grid for this organization */
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Folders</p>
+              </div>
+              {orgFolders.length === 0 && !canManageOrg(activeTab) ? null : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {orgFolders.map(folder => {
+                    const count = media.filter(m => m.folder_id === folder.id).length;
+                    return (
+                      <button
+                        key={folder.id}
+                        onClick={() => setActiveFolderId(folder.id)}
+                        className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border border-border bg-card hover:shadow-md hover:border-primary/40 transition-all aspect-square"
+                      >
+                        <Folder className="w-8 h-8 text-primary/70" />
+                        <span className="text-xs font-medium text-foreground text-center line-clamp-1">{folder.name}</span>
+                        <span className="text-[10px] text-muted-foreground">{count} {count === 1 ? 'item' : 'items'}</span>
+                      </button>
+                    );
+                  })}
+                  {canManageOrg(activeTab) && (
+                    <button
+                      onClick={() => setShowCreateFolder(true)}
+                      className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-all aspect-square"
+                    >
+                      <FolderPlus className="w-8 h-8" />
+                      <span className="text-xs font-medium">New Folder</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Uncategorized / flat media section header (org tabs, folder-less items) ── */}
+      {activeTab !== 'ALL' && !activeFolderId && filtered.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            {orgFolders.length > 0 ? 'Uncategorized' : 'Photos & Videos'}
+          </p>
+          {canManageOrg(activeTab) && (
+            <Button size="sm" variant="ghost" onClick={() => openUpload({ organization: activeTab, folderId: null })}>
+              <Plus className="w-3.5 h-3.5" /> Add Photo
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* ── Create Folder Dialog ── */}
+      <Dialog open={showCreateFolder} onOpenChange={(open) => { if (!open) { setShowCreateFolder(false); setNewFolderName(''); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderPlus className="w-4 h-4" /> New {TAB_MAP[activeTab]?.label} Folder
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Folder name (e.g. Youth Retreat 2026)"
+              value={newFolderName}
+              onChange={e => setNewFolderName(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setShowCreateFolder(false); setNewFolderName(''); }}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateFolder} disabled={creatingFolder}>
+              {creatingFolder ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating…</> : 'Create Folder'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* ── Upload Dialog (UPDATED FOR BATCH PREVIEW) ── */}
       <Dialog open={showUpload} onOpenChange={(open) => {
         if (!open) {
@@ -292,20 +474,31 @@ export default function GalleryPanel({
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Upload Media</DialogTitle>
+            <DialogTitle>
+              {uploadContext?.folderId && activeFolder ? `Add Photo to "${activeFolder.name}"` : 'Upload Media'}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
-            <Select value={uploadOrg} onValueChange={setUploadOrg}>
-              <SelectTrigger><SelectValue placeholder="Organization" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UCM">UCM</SelectItem>
-                <SelectItem value="CWA">CWA</SelectItem>
-                <SelectItem value="CYAF">CYAF</SelectItem>
-                <SelectItem value="CYF">CYF</SelectItem>
-                <SelectItem value="C">Children</SelectItem>
-              </SelectContent>
-            </Select>
+            {uploadContext ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                <Badge className={`${TAB_MAP[uploadContext.organization]?.color} text-white`}>
+                  {TAB_MAP[uploadContext.organization]?.label ?? uploadContext.organization}
+                </Badge>
+                {uploadContext.folderId ? 'This will be added to the folder above.' : 'This will be added without a folder.'}
+              </div>
+            ) : (
+              <Select value={uploadOrg} onValueChange={setUploadOrg}>
+                <SelectTrigger><SelectValue placeholder="Organization" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UCM">UCM</SelectItem>
+                  <SelectItem value="CWA">CWA</SelectItem>
+                  <SelectItem value="CYAF">CYAF</SelectItem>
+                  <SelectItem value="CYF">CYF</SelectItem>
+                  <SelectItem value="C">Children</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
             <Input
               placeholder="Title"
@@ -377,10 +570,12 @@ export default function GalleryPanel({
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
-          <ImageIcon className="w-10 h-10 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">No media yet in this category.</p>
-        </div>
+        activeTab === 'ALL' || activeFolderId || orgFolders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+            <ImageIcon className="w-10 h-10 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">No media yet in this category.</p>
+          </div>
+        ) : null
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((item, idx) => {
@@ -403,7 +598,7 @@ export default function GalleryPanel({
                 )}
 
                 {/* Organization badge */}
-                {tab && (
+                {tab && activeTab === 'ALL' && (
                   <span className={`absolute top-1.5 left-1.5 text-[10px] px-1.5 py-0.5 rounded-full text-white ${tab.color}`}>
                     {tab.label}
                   </span>

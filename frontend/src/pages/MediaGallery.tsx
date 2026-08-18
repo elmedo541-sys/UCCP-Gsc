@@ -1,12 +1,25 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Film } from "lucide-react";
 import GalleryPanel from "@/components/GalleryPanel";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
 import { useUserAuth } from "@/hooks/useUserAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function MediaGallery() {
   const navigate = useNavigate();
-  const { isLoggedIn } = useUserAuth();
+  const { isLoggedIn, personId } = useUserAuth();
+  const [memberOrganization, setMemberOrganization] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoggedIn || !personId) { setMemberOrganization(null); return; }
+    supabase
+      .from('people')
+      .select('organization')
+      .eq('uuid', personId)
+      .maybeSingle()
+      .then(({ data }) => setMemberOrganization(data?.organization ?? null));
+  }, [isLoggedIn, personId]);
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -42,6 +55,7 @@ export default function MediaGallery() {
         <GalleryPanel
           canUpload={isLoggedIn}
           canDelete={isLoggedIn}
+          memberOrganization={memberOrganization}
         />
       </main>
 
