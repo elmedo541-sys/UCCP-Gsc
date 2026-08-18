@@ -389,11 +389,6 @@ export default function Home() {
               onClick={() => isLoggedIn ? navigate(path) : setLoginPromptFeature(label)}
               className="relative bg-card border border-border rounded-2xl p-5 text-center hover:shadow-md transition-all group"
             >
-              {!isLoggedIn && (
-                <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                  <Lock className="h-2.5 w-2.5 text-muted-foreground" />
-                </div>
-              )}
               <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
                 <Icon className="h-6 w-6" />
               </div>
