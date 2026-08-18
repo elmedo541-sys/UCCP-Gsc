@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, LogIn, BookOpen, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare, Download } from "lucide-react";
+import { UserPlus, LogIn, BookOpen, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare, Download, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
 import { useUserAuth } from "@/hooks/useUserAuth";
@@ -10,6 +10,7 @@ import UserMenu from "@/components/UserMenu";
 import { useAppUpdateAvailable } from "@/hooks/useAppUpdateAvailable";
 import InstallAppModal from "@/components/InstallAppModal";
 import { isStandalone } from "@/lib/installPrompt";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface HomepageImage {
   id: string;
@@ -50,6 +51,7 @@ export default function Home() {
 
   // ── Install app button ──
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [loginPromptFeature, setLoginPromptFeature] = useState<string | null>(null);
   const [alreadyInstalled, setAlreadyInstalled] = useState(false);
   useEffect(() => {
     setAlreadyInstalled(isStandalone()); // hide only if already installed
@@ -384,9 +386,14 @@ export default function Home() {
           ].map(({ label, icon: Icon, path, desc, color }) => (
             <button
               key={path}
-              onClick={() => navigate(path)}
-              className="bg-card border border-border rounded-2xl p-5 text-center hover:shadow-md transition-all group"
+              onClick={() => isLoggedIn ? navigate(path) : setLoginPromptFeature(label)}
+              className="relative bg-card border border-border rounded-2xl p-5 text-center hover:shadow-md transition-all group"
             >
+              {!isLoggedIn && (
+                <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                  <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                </div>
+              )}
               <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
                 <Icon className="h-6 w-6" />
               </div>
@@ -396,6 +403,28 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* Login/Register prompt for guests clicking a members-only feature */}
+      <Dialog open={!!loginPromptFeature} onOpenChange={(o) => !o && setLoginPromptFeature(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-1">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Members Only</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {loginPromptFeature} is available to registered church members.
+            Sign in or register to continue.
+          </p>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => { setLoginPromptFeature(null); navigate('/user/login'); }}>
+              <LogIn className="w-4 h-4 mr-1.5" /> Log In
+            </Button>
+            <Button size="sm" className="flex-1" onClick={() => { setLoginPromptFeature(null); navigate('/register'); }}>
+              <UserPlus className="w-4 h-4 mr-1.5" /> Register
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-8 mt-16">
