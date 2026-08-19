@@ -4,12 +4,18 @@ import { ChevronLeft, Film } from "lucide-react";
 import GalleryPanel from "@/components/GalleryPanel";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
 import { useUserAuth } from "@/hooks/useUserAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function MediaGallery() {
   const navigate = useNavigate();
   const { isLoggedIn, personId } = useUserAuth();
+  const { isSuperAdmin, isEditor } = useAuth();
   const [memberOrganization, setMemberOrganization] = useState<string | null>(null);
+
+  // Super Admins and Editor admins can manage the gallery too, even when
+  // they're not separately logged in as a member.
+  const canManageGallery = isLoggedIn || isSuperAdmin || isEditor;
 
   useEffect(() => {
     if (!isLoggedIn || !personId) { setMemberOrganization(null); return; }
@@ -53,8 +59,8 @@ export default function MediaGallery() {
       {/* Gallery */}
       <main className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6">
         <GalleryPanel
-          canUpload={isLoggedIn}
-          canDelete={isLoggedIn}
+          canUpload={canManageGallery}
+          canDelete={canManageGallery}
           memberOrganization={memberOrganization}
         />
       </main>
