@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Upload, X, Play, Image as ImageIcon, Video, Loader2,
-  Trash2, ChevronLeft, ChevronRight, Lock, Folder, FolderPlus, Plus,
+  Trash2, ChevronLeft, ChevronRight, Lock, Folder, FolderPlus, Plus, Download,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -139,6 +139,43 @@ export default function GalleryPanel({
   // Super admins and editor admins can manage every organization's folders;
   // regular members are limited to their own organization.
   const canManageOrg = (org: string) => canUpload && (isAdminManager || (!!memberOrganization && memberOrganization === org));
+
+  // Drag-and-drop: dragging a photo/video thumbnail onto a folder moves it in.
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+
+  const handleMoveToFolder = async (itemId: string, folderId: string) => {
+    // Optimistic update so it feels instant.
+    setMedia(prev => prev.map(m => m.id === itemId ? { ...m, folder_id: folderId } : m));
+    const { error } = await supabase.from('media_gallery').update({ folder_id: folderId }).eq('id', itemId);
+    if (error) {
+      toast({ title: 'Could not move photo', description: error.message, variant: 'destructive' });
+      fetchMedia(); // revert to server truth on failure
+    } else {
+      toast({ title: 'Moved into folder' });
+    }
+  };
+
+  // Downloads the currently displayed media item to the visitor's device,
+  // rather than just opening it in a new tab.
+  const handleDownload = async (item: MediaItem) => {
+    try {
+      const response = await fetch(item.file_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const ext = item.file_url.split('.').pop()?.split('?')[0] || (item.file_type === 'video' ? 'mp4' : 'jpg');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.title?.trim().replace(/[^a-z0-9]+/gi, '-') || 'gallery'}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Fallback: at least open it so the user can save it manually.
+      window.open(item.file_url, '_blank');
+    }
+  };
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => { fetchMedia(); fetchFolders(); }, []);
@@ -404,11 +441,20 @@ export default function GalleryPanel({
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {orgFolders.map(folder => {
                     const count = media.filter(m => m.folder_id === folder.id).length;
+                    const isDropTarget = canManageOrg(folder.organization);
                     return (
                       <button
                         key={folder.id}
                         onClick={() => setActiveFolderId(folder.id)}
-                        className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border border-border bg-card hover:shadow-md hover:border-primary/40 transition-all aspect-square"
+                        onDragOver={(e) => { if (isDropTarget && draggedItemId) { e.preventDefault(); setDragOverFolderId(folder.id); } }}
+                        onDragLeave={() => setDragOverFolderId(prev => prev === folder.id ? null : prev)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setDragOverFolderId(null);
+                          if (isDropTarget && draggedItemId) handleMoveToFolder(draggedItemId, folder.id);
+                        }}
+                        className={`flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border bg-card hover:shadow-md hover:border-primary/40 transition-all aspect-square
+                          ${dragOverFolderId === folder.id ? 'border-primary border-2 bg-primary/5 scale-[1.03]' : 'border-border'}`}
                       >
                         <Folder className="w-8 h-8 text-primary/70" />
                         <span className="text-xs font-medium text-foreground text-center line-clamp-1">{folder.name}</span>
@@ -588,11 +634,16 @@ export default function GalleryPanel({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {filtered.map((item, idx) => {
             const tab = TAB_MAP[item.organization];
+            const draggable = canManageOrg(item.organization) && !activeFolderId;
             return (
               <Card
                 key={item.id}
                 onClick={() => setLightboxIdx(idx)}
-                className="group relative aspect-square overflow-hidden cursor-pointer border-border p-0"
+                draggable={draggable}
+                onDragStart={(e) => { setDraggedItemId(item.id); e.dataTransfer.effectAllowed = 'move'; }}
+                onDragEnd={() => { setDraggedItemId(null); setDragOverFolderId(null); }}
+                className={`group relative aspect-square overflow-hidden border-border p-0
+                  ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
               >
                 {item.file_type === 'video' ? (
                   <VideoThumb url={item.file_url} />
@@ -619,15 +670,24 @@ export default function GalleryPanel({
                   </div>
                 )}
 
-                {/* Delete button */}
-                {canDelete && (
+                {/* Download + Delete buttons */}
+                <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 hover:bg-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
+                    title="Download"
+                    className="w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-white" />
+                    <Download className="w-3.5 h-3.5 text-white" />
                   </button>
-                )}
+                  {canDelete && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                      className="w-6 h-6 rounded-full bg-black/60 hover:bg-destructive flex items-center justify-center"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-white" />
+                    </button>
+                  )}
+                </div>
               </Card>
             );
           })}
@@ -693,6 +753,14 @@ export default function GalleryPanel({
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-shrink-0 gap-1.5"
+                    onClick={() => handleDownload(lightboxItem)}
+                  >
+                    <Download className="w-3.5 h-3.5" /> Save
+                  </Button>
                 </div>
               </div>
             </div>
