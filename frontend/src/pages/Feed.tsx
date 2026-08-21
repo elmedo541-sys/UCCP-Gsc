@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Heart, MessageCircle, Trash2, ImageIcon, Send,
   ArrowLeft, Cake, X, Loader2, Users, Calendar, BookOpen, Film,
-  Copy, Check, ExternalLink, LogIn,
+  Copy, Check, ExternalLink, LogIn, Download,
 } from 'lucide-react';
 import ChatSupportWidget from '@/components/ChatSupportWidget';
 import OnboardingTour from '@/components/OnboardingTour';
@@ -64,6 +64,25 @@ function fullDate(iso: string): string {
 
 function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+}
+
+/* Downloads an image to the visitor's device rather than just opening it. */
+async function downloadImage(url: string) {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const ext = url.split('.').pop()?.split('?')[0] || 'jpg';
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = `post-image.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
+  } catch {
+    window.open(url, '_blank');
+  }
 }
 
 /* ─── Avatar ─────────────────────────────────────────────────────────────── */
@@ -261,7 +280,7 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
 
 /* ─── Post Card ──────────────────────────────────────────────────────────── */
 function PostCard({
-  post, personId, onLikeToggle, onDelete, index = 0, canModerate = false, onImageClick,
+  post, personId, onLikeToggle, onDelete, index = 0, canModerate = false, canDownload = false, onImageClick,
 }: {
   post: Post;
   personId: string | null;
@@ -269,6 +288,7 @@ function PostCard({
   onDelete: (postId: string) => void;
   index?: number;
   canModerate?: boolean;
+  canDownload?: boolean;
   onImageClick: (url: string) => void;
 }) {
   const [showComments, setShowComments] = useState(false);
@@ -325,7 +345,7 @@ function PostCard({
 
         {/* Image */}
         {post.image_url && (
-          <div className="rounded-xl overflow-hidden mb-3 bg-muted border border-border/40">
+          <div className="relative group rounded-xl overflow-hidden mb-3 bg-muted border border-border/40">
             <img
               src={post.image_url}
               alt="Post image"
@@ -333,6 +353,15 @@ function PostCard({
               className="w-full max-h-[420px] object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
               loading="lazy"
             />
+            {canDownload && (
+              <button
+                onClick={(e) => { e.stopPropagation(); downloadImage(post.image_url!); }}
+                title="Download photo"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Download className="w-4 h-4 text-white" />
+              </button>
+            )}
           </div>
         )}
 
@@ -378,7 +407,7 @@ function PostCard({
 export default function Feed() {
   const navigate = useNavigate();
   const { personId, isLoggedIn, loading: authLoading } = useUserAuth();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAuth();
   const { toast } = useToast();
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -919,6 +948,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
               onDelete={handleDelete}
               index={i}
               canModerate={isSuperAdmin}
+              canDownload={isLoggedIn || isAdmin}
               onImageClick={setLightboxImage}
             />
           ))
@@ -941,6 +971,15 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
           >
             <X className="w-5 h-5" />
           </button>
+          {(isLoggedIn || isAdmin) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); downloadImage(lightboxImage); }}
+              aria-label="Download"
+              className="absolute top-4 right-16 h-10 px-4 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center gap-2 text-sm font-medium transition-colors"
+            >
+              <Download className="w-4 h-4" /> Save
+            </button>
+          )}
           <img
             src={lightboxImage}
             alt="Full size"
