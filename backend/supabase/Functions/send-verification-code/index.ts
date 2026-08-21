@@ -112,14 +112,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Return response with code for development if email failed
+    // Return response — never include the raw code in the API response,
+    // even if email delivery failed. Leaking it here would let anyone
+    // requesting a code for someone else's email read it directly,
+    // with no actual proof they own that inbox.
+    if (!emailSent) {
+      console.error(`Email delivery failed for ${email}:`, emailError);
+      return new Response(
+        JSON.stringify({
+          error: 'Could not send the verification email right now. Please try again shortly, or contact an admin for help.',
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: emailSent ? 'Verification code sent to your email' : 'Code generated (email may not be delivered)',
-        emailSent,
-        // Include code if email failed for development/testing
-        ...(!emailSent && { code, emailError: emailError?.message || 'Email service unavailable' })
+      JSON.stringify({
+        success: true,
+        message: 'Verification code sent to your email',
+        emailSent: true,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

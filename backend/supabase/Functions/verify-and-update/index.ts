@@ -17,23 +17,49 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify code
-    const { data: verificationData, error: verifyError } = await supabase
+    // Look up the active code for this email/type regardless of the
+    // submitted value, so wrong guesses can be counted and capped —
+    // without this, a 6-digit code (1 in a million) is brute-forceable
+    // by a script within its 10-minute lifetime.
+    const { data: activeCode, error: lookupError } = await supabase
       .from('verification_codes')
       .select('*')
       .eq('email', email)
-      .eq('code', code)
       .eq('type', type)
       .eq('used', false)
       .gt('expires_at', new Date().toISOString())
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (verifyError || !verificationData) {
+    if (lookupError || !activeCode) {
       return new Response(
         JSON.stringify({ error: 'Invalid or expired verification code' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const MAX_ATTEMPTS = 5;
+    if ((activeCode.attempts ?? 0) >= MAX_ATTEMPTS) {
+      await supabase.from('verification_codes').update({ used: true }).eq('id', activeCode.id);
+      return new Response(
+        JSON.stringify({ error: 'Too many incorrect attempts. Please request a new code.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (activeCode.code !== code) {
+      await supabase
+        .from('verification_codes')
+        .update({ attempts: (activeCode.attempts ?? 0) + 1 })
+        .eq('id', activeCode.id);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired verification code' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const verificationData = activeCode;
 
     // Mark code as used
     await supabase
@@ -67,7 +93,7 @@ Deno.serve(async (req) => {
         await supabase
           .from('people')
           .update({ email: newEmail })
-          .eq('id', authData.person_id);
+          .eq('uuid', authData.person_id);
       }
 
       return new Response(

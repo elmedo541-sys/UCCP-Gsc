@@ -156,7 +156,10 @@ export default function AdminDashboard() {
   const [allUpcomingBirthdays, setAllUpcomingBirthdays] = useState<{ person_name: string; days_until: number; birthday_date: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
-  const [selectedPersonAuth, setSelectedPersonAuth] = useState<{username: string; password: string} | null>(null);
+  const [selectedPersonAuth, setSelectedPersonAuth] = useState<{username: string} | null>(null);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetPasswordValue, setResetPasswordValue] = useState('');
+  const [resettingPassword, setResettingPassword] = useState(false);
   const [selectedPersonChildren, setSelectedPersonChildren] = useState<Child[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState<Partial<Person>>({});
@@ -314,6 +317,31 @@ export default function AdminDashboard() {
     toast({ title: "Member deleted" });
   };
 
+  const handleResetMemberPassword = async () => {
+    if (!selectedPerson || resetPasswordValue.length < 6) {
+      toast({ title: 'Invalid password', description: 'Password must be at least 6 characters.', variant: 'destructive' });
+      return;
+    }
+    setResettingPassword(true);
+    try {
+      const token = getAdminToken();
+      const { data, error } = await supabase.rpc('admin_reset_member_password', {
+        p_person_id: selectedPerson.uuid,
+        p_admin_token: token,
+        p_new_password: resetPasswordValue,
+      });
+      if (error || !data) throw error || new Error('Reset failed');
+      toast({ title: 'Password reset', description: `New password set for ${selectedPerson.full_name}.` });
+      setShowResetPassword(false);
+      setResetPasswordValue('');
+    } catch (error) {
+      const e = error as { message?: string };
+      toast({ title: 'Failed to reset password', description: e?.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   const handleViewPerson = async (person: Person) => {
     setSelectedPerson(person); setEditFormData(person); setIsEditing(false);
     const { data: childrenData } = await supabase.from('children').select('*').eq('person_id', person.uuid);
@@ -327,7 +355,7 @@ export default function AdminDashboard() {
           p_admin_token: token,
         });
         if (!error && data && data.length > 0) {
-          setSelectedPersonAuth({ username: data[0].username || 'N/A', password: data[0].password_display || 'N/A' });
+          setSelectedPersonAuth({ username: data[0].username || 'N/A' });
         } else {
           setSelectedPersonAuth(null);
         }
@@ -1044,13 +1072,17 @@ export default function AdminDashboard() {
                       <Key className="w-4 h-4" /> Login Credentials
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2 pb-4">
-                    {[['Username', selectedPersonAuth.username], ['Password', selectedPersonAuth.password]].map(([label, val]) => (
-                      <div key={label} className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300 w-20">{label}:</span>
-                        <code className="flex-1 text-sm bg-orange-100 dark:bg-orange-900/50 px-2 py-0.5 rounded font-mono">{val}</code>
-                      </div>
-                    ))}
+                  <CardContent className="space-y-3 pb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-orange-700 dark:text-orange-300 w-20">Username:</span>
+                      <code className="flex-1 text-sm bg-orange-100 dark:bg-orange-900/50 px-2 py-0.5 rounded font-mono">{selectedPersonAuth.username}</code>
+                    </div>
+                    <p className="text-[11px] text-orange-700/70 dark:text-orange-300/70">
+                      Passwords are never stored in readable form and can't be viewed — only reset.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={() => setShowResetPassword(true)} className="gap-1.5 border-orange-300 text-orange-800 hover:bg-orange-100 dark:text-orange-200 dark:border-orange-800">
+                      <Key className="w-3.5 h-3.5" /> Reset Password
+                    </Button>
                   </CardContent>
                 </Card>
               )}
@@ -1260,6 +1292,35 @@ export default function AdminDashboard() {
             </Button>
             <Button size="sm" onClick={handleChangePassword} disabled={changingPassword || !oldPassword || !newPassword || !confirmPassword}>
               {changingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Change Password'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showResetPassword} onOpenChange={(o) => { if (!resettingPassword) { setShowResetPassword(o); if (!o) setResetPasswordValue(''); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Key className="w-4 h-4" /> Reset Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for {selectedPerson?.full_name}. They'll need to use this new password next time they log in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5 py-2">
+            <Label className="text-xs">New Password</Label>
+            <Input
+              type="text"
+              value={resetPasswordValue}
+              onChange={e => setResetPasswordValue(e.target.value)}
+              placeholder="At least 6 characters"
+              className="h-9"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowResetPassword(false)} disabled={resettingPassword}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleResetMemberPassword} disabled={resettingPassword || resetPasswordValue.length < 6}>
+              {resettingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Reset Password'}
             </Button>
           </div>
         </DialogContent>
