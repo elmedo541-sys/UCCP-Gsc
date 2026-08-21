@@ -147,9 +147,22 @@ export default function GalleryPanel({
   const handleMoveToFolder = async (itemId: string, folderId: string) => {
     // Optimistic update so it feels instant.
     setMedia(prev => prev.map(m => m.id === itemId ? { ...m, folder_id: folderId } : m));
-    const { error } = await supabase.from('media_gallery').update({ folder_id: folderId }).eq('id', itemId);
-    if (error) {
-      toast({ title: 'Could not move photo', description: error.message, variant: 'destructive' });
+    const { data, error } = await supabase
+      .from('media_gallery')
+      .update({ folder_id: folderId })
+      .eq('id', itemId)
+      .select();
+
+    // A missing UPDATE policy on media_gallery doesn't error — it just
+    // silently matches zero rows, which looks identical to success. Treat
+    // "no rows came back" as a failure too, so it doesn't quietly revert
+    // the next time the page refetches.
+    if (error || !data || data.length === 0) {
+      toast({
+        title: 'Could not move photo',
+        description: error?.message || 'No permission to update this item — an UPDATE policy may be missing on media_gallery.',
+        variant: 'destructive',
+      });
       fetchMedia(); // revert to server truth on failure
     } else {
       toast({ title: 'Moved into folder' });
