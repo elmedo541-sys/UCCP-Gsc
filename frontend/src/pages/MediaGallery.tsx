@@ -62,6 +62,7 @@ export default function MediaGallery() {
           canUpload={canManageGallery}
           canDelete={canManageGallery}
           memberOrganization={memberOrganization}
+          isAdminManager={isSuperAdmin || isEditor}
         />
       </main>
 

@@ -69,6 +69,11 @@ interface GalleryPanelProps {
    *  creation and folder-scoped uploads for an organization's tab are
    *  only offered to members whose own organization matches that tab. */
   memberOrganization?: string | null;
+  /** Super admins and editor admins can manage folders for every
+   *  organization, not just one matching their own linked member profile
+   *  (they may not even have one — admin accounts are separate from
+   *  member accounts). */
+  isAdminManager?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -77,6 +82,7 @@ export default function GalleryPanel({
   defaultUploaderName = '',
   canDelete = false,
   memberOrganization = null,
+  isAdminManager = false,
 }: GalleryPanelProps) {
   const { toast } = useToast();
 
@@ -129,8 +135,10 @@ export default function GalleryPanel({
 
   const lightboxItem = lightboxIdx !== null ? filtered[lightboxIdx] : null;
 
-  // Can the logged-in member manage folders/uploads for a given org?
-  const canManageOrg = (org: string) => canUpload && !!memberOrganization && memberOrganization === org;
+  // Can the logged-in person manage folders/uploads for a given org?
+  // Super admins and editor admins can manage every organization's folders;
+  // regular members are limited to their own organization.
+  const canManageOrg = (org: string) => canUpload && (isAdminManager || (!!memberOrganization && memberOrganization === org));
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => { fetchMedia(); fetchFolders(); }, []);
