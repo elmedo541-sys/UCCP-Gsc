@@ -102,7 +102,6 @@ export default function ForgotPassword() {
 
   // Step 2
   const [otpCode, setOtpCode] = useState('');
-  const [devCode, setDevCode] = useState('');  // shown when no email/SMS service
 
   // Step 3
   const [newPassword, setNewPassword]         = useState('');
@@ -152,15 +151,10 @@ export default function ForgotPassword() {
       // Store email so verify step can use it
       setEmail(targetEmail);
 
-      // Dev mode — code returned directly
-      if (data?.code) setDevCode(data.code as string);
-
       setStep('code');
       toast({
-        title: 'Code Generated',
-        description: data?.code
-          ? 'Your verification code is shown below.'
-          : 'Verification code sent.',
+        title: 'Code Sent',
+        description: `Check ${targetEmail} for your 6-digit verification code.`,
       });
     } catch (err) {
       toast({
@@ -364,15 +358,6 @@ export default function ForgotPassword() {
                     {method === 'phone' ? ` for +63${phone.slice(1)}` : ` sent to ${email}`}
                   </p>
                 </div>
-
-                {/* Dev mode: show the code */}
-                {devCode && (
-                  <div className="mb-5 p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-center">
-                    <p className="text-xs text-amber-300 mb-1 font-medium uppercase tracking-wide">Your verification code</p>
-                    <p className="text-3xl font-bold text-amber-200 tracking-[0.4em]">{devCode}</p>
-                    <p className="text-xs text-amber-400/70 mt-1">Expires in 10 minutes</p>
-                  </div>
-                )}
 
                 <form onSubmit={handleVerify} className="space-y-6">
                   <OTPInput value={otpCode} onChange={setOtpCode} />
