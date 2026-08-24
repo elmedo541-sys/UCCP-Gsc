@@ -812,21 +812,23 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {[
-              { icon: Users, path: '/directory', label: 'Directory' },
-              { icon: Calendar, path: '/events', label: 'Events' },
-              { icon: BookOpen, path: '/prayer-requests', label: 'Prayers' },
-              { icon: Film, path: '/gallery', label: 'Gallery' },
-            ].map(({ icon: Icon, path, label }) => (
-              <button
-                key={path}
-                onClick={() => navigate(path)}
-                title={label}
-                className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-              >
-                <Icon className="w-4 h-4" />
-              </button>
-            ))}
+            <div className="hidden md:flex items-center gap-1">
+              {[
+                { icon: Users, path: '/directory', label: 'Directory' },
+                { icon: Calendar, path: '/events', label: 'Events' },
+                { icon: BookOpen, path: '/prayer-requests', label: 'Prayers' },
+                { icon: Film, path: '/gallery', label: 'Gallery' },
+              ].map(({ icon: Icon, path, label }) => (
+                <button
+                  key={path}
+                  onClick={() => navigate(path)}
+                  title={label}
+                  className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Icon className="w-4 h-4" />
+                </button>
+              ))}
+            </div>
             {isLoggedIn && personId && <NotificationBell personId={personId} />}
             {isLoggedIn && userProfile ? (
               <UserMenu name={userProfile.full_name} picture={userProfile.profile_picture} />

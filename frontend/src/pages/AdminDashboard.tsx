@@ -839,14 +839,14 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">{filteredPeople.length} records</p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="relative">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative flex-1 min-w-[160px] sm:flex-none">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Search name or email…"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-9 w-56 h-9 text-sm"
+                    className="pl-9 w-full sm:w-56 h-9 text-sm"
                   />
                 </div>
                 {(isSuperAdmin || canRegisterMembers) && (

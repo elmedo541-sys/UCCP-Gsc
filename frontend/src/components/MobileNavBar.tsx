@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MessageSquare, Users, Calendar, Heart, UserCircle } from 'lucide-react';
+import { MessageSquare, Users, Calendar, Heart, Film, UserCircle } from 'lucide-react';
 
 const TABS = [
   { icon: MessageSquare, path: '/feed', label: 'Feed' },
   { icon: Users, path: '/directory', label: 'Directory' },
   { icon: Calendar, path: '/events', label: 'Events' },
   { icon: Heart, path: '/prayer-requests', label: 'Prayers' },
+  { icon: Film, path: '/gallery', label: 'Gallery' },
   { icon: UserCircle, path: '/user/profile', label: 'Profile' },
 ];
 
