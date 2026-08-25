@@ -12,6 +12,7 @@ import {
   Copy, Check, ExternalLink, LogIn, Download,
 } from 'lucide-react';
 import ChatSupportWidget from '@/components/ChatSupportWidget';
+import EmojiPicker from '@/components/EmojiPicker';
 import OnboardingTour from '@/components/OnboardingTour';
 import UserMenu from '@/components/UserMenu';
 import WelcomeBanner from '@/components/WelcomeBanner';
@@ -264,6 +265,7 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
             className="resize-none text-sm rounded-2xl min-h-[38px] flex-1"
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
           />
+          <EmojiPicker onSelect={(emoji) => setText(t => `${t}${emoji}`)} />
           <Button
             size="sm"
             onClick={handleSubmit}
@@ -885,13 +887,19 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
               )}
 
               <div className="flex items-center justify-between pt-0.5">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-primary/10 active:scale-95"
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  <span>Photo</span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-primary/10 active:scale-95"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    <span>Photo</span>
+                  </button>
+                  <EmojiPicker
+                    onSelect={(emoji) => setContent(c => `${c}${emoji}`)}
+                    triggerClassName="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-primary/10 active:scale-95"
+                  />
+                </div>
                 <input
                   ref={fileInputRef}
                   type="file"
