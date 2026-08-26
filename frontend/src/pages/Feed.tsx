@@ -182,12 +182,13 @@ function BirthdayModal({ name, onClose }: { name: string; onClose: () => void })
 }
 
 /* ─── Comment Section ────────────────────────────────────────────────────── */
-function CommentSection({ postId, personId }: { postId: string; personId: string | null }) {
+function CommentSection({ postId, personId, canModerate = false }: { postId: string; personId: string | null; canModerate?: boolean }) {
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchComments = useCallback(async () => {
     const { data: rows, error } = await supabase
@@ -233,6 +234,18 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
     setSubmitting(false);
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    setDeletingId(commentId);
+    // Optimistic removal
+    setComments(prev => prev.filter(c => c.id !== commentId));
+    const { error } = await supabase.from('feed_comments').delete().eq('id', commentId);
+    if (error) {
+      toast({ title: 'Error', description: 'Could not delete comment.', variant: 'destructive' });
+      fetchComments(); // revert on failure
+    }
+    setDeletingId(null);
+  };
+
   return (
     <div className="border-t border-border pt-3 mt-3 space-y-3">
       {loading ? (
@@ -240,12 +253,22 @@ function CommentSection({ postId, personId }: { postId: string; personId: string
       ) : (
         <div className="space-y-2">
           {comments.map((c, i) => (
-            <div key={c.id} className="flex gap-2 animate-feed-comment-item" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
+            <div key={c.id} className="flex gap-2 animate-feed-comment-item group" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
               <Avatar picture={c.author_picture} name={c.author_name} size="sm" />
-              <div className="flex-1 bg-muted rounded-2xl px-3 py-2">
+              <div className="flex-1 bg-muted rounded-2xl px-3 py-2 relative">
                 <p className="text-xs font-semibold text-foreground">{c.author_name}</p>
-                <p className="text-sm text-foreground/90 mt-0.5">{c.content}</p>
+                <p className="text-sm text-foreground/90 mt-0.5 pr-5">{c.content}</p>
                 <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(c.created_at)}</p>
+                {(personId === c.person_id || canModerate) && (
+                  <button
+                    onClick={() => handleDeleteComment(c.id)}
+                    disabled={deletingId === c.id}
+                    title={personId === c.person_id ? 'Delete comment' : 'Delete comment (admin)'}
+                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                  >
+                    {deletingId === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -397,7 +420,7 @@ function PostCard({
 
         {showComments && (
           <div className="animate-feed-comments">
-            <CommentSection postId={post.id} personId={personId} />
+            <CommentSection postId={post.id} personId={personId} canModerate={canModerate} />
           </div>
         )}
       </div>
