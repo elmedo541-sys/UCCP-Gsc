@@ -229,6 +229,17 @@ export default function Home() {
           {currentImageIndex === 0 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
             <div className={`max-w-4xl mx-auto space-y-6 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+              <div className="flex flex-col items-center mb-2">
+                <img
+                  src="/uccp-logo-transparent.png"
+                  alt="UCCP-Good Samaritan Church Logo"
+                  className="h-20 w-20 md:h-24 md:w-24 object-contain drop-shadow-2xl animate-hero-logo"
+                />
+                <h1 className="mt-3 text-xl md:text-2xl font-bold text-white uppercase animate-hero-text drop-shadow-lg">
+                  Good Samaritan Church
+                </h1>
+                <span className="h-0.5 w-20 bg-gradient-to-r from-transparent via-white to-transparent mt-2 animate-hero-underline" />
+              </div>
               <h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-2xl">
                 Welcome to
               </h2>
