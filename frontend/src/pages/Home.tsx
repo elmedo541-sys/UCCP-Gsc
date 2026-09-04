@@ -194,6 +194,19 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Animated Brand Intro — separate from the slideshow */}
+      <div className="w-full bg-gradient-to-b from-slate-900 to-slate-800 py-6 flex flex-col items-center justify-center">
+        <img
+          src="/uccp-logo-transparent.png"
+          alt="UCCP-Good Samaritan Church Logo"
+          className="h-16 w-16 md:h-20 md:w-20 object-contain drop-shadow-2xl animate-hero-logo"
+        />
+        <h1 className="mt-2 text-lg md:text-xl font-bold text-white uppercase tracking-wide animate-hero-text drop-shadow-lg">
+          Good Samaritan Church
+        </h1>
+        <span className="h-0.5 w-16 bg-gradient-to-r from-transparent via-white to-transparent mt-2 animate-hero-underline" />
+      </div>
+
       {/* Hero Section with Slideshow */}
       <div className="relative">
         <div className="w-full h-[400px] md:h-[500px] overflow-hidden relative">
@@ -229,17 +242,6 @@ export default function Home() {
           {currentImageIndex === 0 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
             <div className={`max-w-4xl mx-auto space-y-6 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-              <div className="flex flex-col items-center mb-2">
-                <img
-                  src="/uccp-logo-transparent.png"
-                  alt="UCCP-Good Samaritan Church Logo"
-                  className="h-20 w-20 md:h-24 md:w-24 object-contain drop-shadow-2xl animate-hero-logo"
-                />
-                <h1 className="mt-3 text-xl md:text-2xl font-bold text-white uppercase animate-hero-text drop-shadow-lg">
-                  Good Samaritan Church
-                </h1>
-                <span className="h-0.5 w-20 bg-gradient-to-r from-transparent via-white to-transparent mt-2 animate-hero-underline" />
-              </div>
               <h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-2xl">
                 Welcome to
               </h2>
