@@ -16,6 +16,7 @@ interface AuthContextType {
   isEditor: boolean;
   isViewer: boolean;
   canRegisterMembers: boolean;
+  isPrayerTeam: boolean;
   loading: boolean;
   signIn: (username: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (username: string, password: string) => Promise<{ error: Error | null }>;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canRegisterMembers, setCanRegisterMembers] = useState(false);
+  const [isPrayerTeam, setIsPrayerTeam] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isSuperAdmin = role === 'super_admin';
@@ -72,11 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAdminId(null);
         setRole(null);
         setCanRegisterMembers(false);
+        setIsPrayerTeam(false);
       } else {
         setIsAdmin(true);
         setAdminId(session.adminId);
         setRole(data.role || session.role || 'super_admin');
         setCanRegisterMembers(!!data.can_register_members);
+        setIsPrayerTeam(!!data.is_prayer_team);
       }
     } catch (error) {
       console.error('Error checking session:', error);
@@ -110,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAdminId(data.admin_id);
       setRole(data.role || 'super_admin');
       setCanRegisterMembers(!!data.can_register_members);
+      setIsPrayerTeam(!!data.is_prayer_team);
       setIsAdmin(true);
 
       return { error: null };
@@ -142,10 +147,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
     setIsAdmin(false);
     setCanRegisterMembers(false);
+    setIsPrayerTeam(false);
   };
 
   return (
-    <AuthContext.Provider value={{ adminId, role, isAdmin, isSuperAdmin, isEditor, isViewer, canRegisterMembers, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ adminId, role, isAdmin, isSuperAdmin, isEditor, isViewer, canRegisterMembers, isPrayerTeam, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

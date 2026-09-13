@@ -19,6 +19,7 @@ const Events = lazy(() => import("./pages/Events"));
 const MemberDirectory = lazy(() => import("./pages/MemberDirectory"));
 const PrayerRequests = lazy(() => import("./pages/PrayerRequests"));
 const AdminEvents = lazy(() => import("./pages/AdminEvents"));
+const AdminPrayerRequests = lazy(() => import("./pages/AdminPrayerRequests"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Wraps a lazy page in Suspense with a lightweight fallback so navigating
@@ -111,6 +112,11 @@ export const routers = [
       path: "/admin/events",
       name: 'admin-events',
       element: withSuspense(AdminEvents),
+    },
+    {
+      path: "/admin/prayer-requests",
+      name: 'admin-prayer-requests',
+      element: withSuspense(AdminPrayerRequests),
     },
     /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
     {

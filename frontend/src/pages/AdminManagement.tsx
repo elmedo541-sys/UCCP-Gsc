@@ -19,7 +19,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import {
-  ChevronLeft, Loader2, Plus, Trash2, ShieldCheck, UserCog, Eye, Users,
+  ChevronLeft, Loader2, Plus, Trash2, ShieldCheck, UserCog, Eye, Users, Heart,
 } from 'lucide-react';
 
 interface AdminRecord {
@@ -27,6 +27,7 @@ interface AdminRecord {
   username: string;
   role: 'super_admin' | 'editor' | 'viewer';
   can_register_members?: boolean;
+  is_prayer_team?: boolean;
   created_at: string;
 }
 
@@ -77,6 +78,7 @@ export default function AdminManagement() {
   const [deleteTarget, setDeleteTarget] = useState<AdminRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [togglingPrayerId, setTogglingPrayerId] = useState<string | null>(null);
 
   const fetchAdmins = useCallback(async () => {
     const token = getToken();
@@ -207,6 +209,38 @@ export default function AdminManagement() {
     }
   };
 
+  const handleTogglePrayerTeam = async (admin: AdminRecord, next: boolean) => {
+    const token = getToken();
+    if (!token) return;
+
+    setTogglingPrayerId(admin.id);
+    // Optimistic update
+    setAdmins(prev => prev.map(a => a.id === admin.id ? { ...a, is_prayer_team: next } : a));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
+        body: { action: 'update_prayer_team', token, target_admin_id: admin.id, is_prayer_team: next },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: next ? 'Added to prayer team' : 'Removed from prayer team',
+        description: `${admin.username} can ${next ? 'now' : 'no longer'} view prayer requests.`,
+      });
+    } catch (error) {
+      // Revert on failure
+      setAdmins(prev => prev.map(a => a.id === admin.id ? { ...a, is_prayer_team: !next } : a));
+      toast({
+        title: 'Failed to update prayer team access',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setTogglingPrayerId(null);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
@@ -261,6 +295,7 @@ export default function AdminManagement() {
                     <TableHead>Username</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Can Add Members</TableHead>
+                    <TableHead className="gap-1"><span className="inline-flex items-center gap-1"><Heart className="w-3.5 h-3.5" />Prayer Team</span></TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -286,6 +321,20 @@ export default function AdminManagement() {
                               onCheckedChange={(checked) => handleTogglePermission(admin, checked)}
                             />
                             {togglingId === admin.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {admin.role === 'super_admin' ? (
+                          <span className="text-xs text-muted-foreground">Always allowed</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={!!admin.is_prayer_team}
+                              disabled={togglingPrayerId === admin.id}
+                              onCheckedChange={(checked) => handleTogglePrayerTeam(admin, checked)}
+                            />
+                            {togglingPrayerId === admin.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
                           </div>
                         )}
                       </TableCell>

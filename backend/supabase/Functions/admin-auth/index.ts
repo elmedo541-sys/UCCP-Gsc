@@ -8,13 +8,14 @@ const corsHeaders = {
 interface LoginRequest {
   username: string;
   password: string;
-  action: 'login' | 'signup' | 'create_admin' | 'delete_admin' | 'list_admins' | 'update_permissions' | 'whoami';
+  action: 'login' | 'signup' | 'create_admin' | 'delete_admin' | 'list_admins' | 'update_permissions' | 'update_prayer_team' | 'whoami';
   token?: string;
   new_username?: string;
   new_password?: string;
   new_role?: 'viewer' | 'editor';
   target_admin_id?: string;
   can_register_members?: boolean;
+  is_prayer_team?: boolean;
 }
 
 async function verifySuperAdmin(supabase: ReturnType<typeof createClient>, token: string): Promise<{ valid: boolean; adminId?: string }> {
@@ -65,7 +66,7 @@ Deno.serve(async (req) => {
 
       const { data, error } = await supabase
         .from('admin_credentials')
-        .select('id, username, role, can_register_members, created_at')
+        .select('id, username, role, can_register_members, is_prayer_team, created_at')
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -95,7 +96,7 @@ Deno.serve(async (req) => {
 
       const { data: cred, error: credErr } = await supabase
         .from('admin_credentials')
-        .select('id, username, role, can_register_members')
+        .select('id, username, role, can_register_members, is_prayer_team')
         .eq('id', sessionRow.admin_id)
         .maybeSingle();
 
@@ -113,6 +114,7 @@ Deno.serve(async (req) => {
           username: cred.username,
           role: cred.role,
           can_register_members: !!cred.can_register_members,
+          is_prayer_team: !!cred.is_prayer_team,
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -158,6 +160,37 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, message: 'Permissions updated successfully' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ── UPDATE PRAYER TEAM (super admin only) ───────────────────────────────
+    if (action === 'update_prayer_team') {
+      const { valid } = await verifySuperAdmin(supabase, body.token ?? '');
+      if (!valid) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { target_admin_id, is_prayer_team } = body;
+      if (!target_admin_id || typeof is_prayer_team !== 'boolean') {
+        return new Response(
+          JSON.stringify({ error: 'target_admin_id and is_prayer_team are required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { error: updateError } = await supabase
+        .from('admin_credentials')
+        .update({ is_prayer_team })
+        .eq('id', target_admin_id);
+
+      if (updateError) throw updateError;
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Prayer team access updated successfully' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -347,7 +380,7 @@ Deno.serve(async (req) => {
 
       const { data: credRow } = await supabase
         .from('admin_credentials')
-        .select('can_register_members')
+        .select('can_register_members, is_prayer_team')
         .eq('id', result.admin_id)
         .maybeSingle();
 
@@ -358,6 +391,7 @@ Deno.serve(async (req) => {
           admin_id: result.admin_id,
           role: result.role,
           can_register_members: !!credRow?.can_register_members,
+          is_prayer_team: !!credRow?.is_prayer_team,
           expires_at: expiresAt.toISOString(),
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

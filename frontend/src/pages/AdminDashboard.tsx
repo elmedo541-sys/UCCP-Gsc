@@ -147,7 +147,7 @@ function StatCard({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { isAdmin, isSuperAdmin, isEditor, canRegisterMembers, role, loading: authLoading, signOut } = useAuth();
+  const { isAdmin, isSuperAdmin, isEditor, canRegisterMembers, isPrayerTeam, role, loading: authLoading, signOut } = useAuth();
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
 
@@ -512,6 +512,11 @@ export default function AdminDashboard() {
                 <DropdownMenuItem onClick={() => navigate('/admin/events')} className="gap-2 cursor-pointer">
                   <Calendar className="w-4 h-4" /> Events
                 </DropdownMenuItem>
+                {(isSuperAdmin || isPrayerTeam) && (
+                  <DropdownMenuItem onClick={() => navigate('/admin/prayer-requests')} className="gap-2 cursor-pointer">
+                    <Heart className="w-4 h-4" /> Prayer Requests
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => setShowPasswordDialog(true)} className="gap-2 cursor-pointer">
                   <Key className="w-4 h-4" /> Change Password
                 </DropdownMenuItem>
