@@ -1,3 +1,4 @@
+import "./AuthPages.css";
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -176,25 +177,19 @@ export default function Register() {
   const filledChildren = children.filter(c => c.name.trim());
   const pwStrength = getPasswordStrength(password);
 
-  const inputCls = "bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:bg-gray-800 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 rounded-xl";
-  const sectionHeadCls = "flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3";
+  const inputCls = "gsc-auth-field gsc-auth-border gsc-auth-ink placeholder:text-[var(--auth-muted)] focus:border-[var(--auth-gold)] focus:bg-[var(--auth-surface)] focus:ring-2 focus:ring-[var(--auth-gold)]/20 transition-all duration-200 rounded-md";
+  const sectionHeadCls = "flex items-center gap-2 text-xs font-semibold gsc-auth-muted uppercase tracking-widest mb-3";
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 py-10 relative overflow-hidden"
-      style={{
-        backgroundImage: 'url(https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/c91049a2-add2-40.png)',
-        backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
-      }}
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-
-      {/* Floating orbs */}
-      <div className="absolute top-[5%]  left-[5%]  w-52 h-52 rounded-full bg-blue-500/15   blur-3xl auth-float-1 pointer-events-none" />
-      <div className="absolute bottom-[8%] right-[4%] w-64 h-64 rounded-full bg-purple-500/15 blur-3xl auth-float-2 pointer-events-none" />
-      <div className="absolute top-[45%] left-[3%] w-36 h-36  rounded-full bg-indigo-400/15  blur-2xl auth-float-3 pointer-events-none" />
-
-      <div className="w-full max-w-3xl relative z-10 auth-card-enter">
+    <div className="gsc-auth min-h-screen p-4 py-10">
+      <header className="gsc-auth-brand">
+        <a href="/" aria-label="Good Samaritan Church home">
+          <img src="/uccp-logo-transparent.png" alt="UCCP logo" width="52" height="52" />
+          <span><small>UNITED CHURCH OF CHRIST IN THE PHILIPPINES</small><strong>Good Samaritan Church</strong></span>
+        </a>
+        <p>Register to stay connected with your church family.</p>
+      </header>
+      <div className="w-full max-w-3xl relative z-10 ">
 
         {/* ── Progress ─────────────────────────────────────────────────────── */}
         <div className="mb-6 flex items-center justify-center">
@@ -207,22 +202,22 @@ export default function Register() {
                 <div className="flex flex-col items-center gap-1.5">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-400
                     ${isDone
-                      ? 'bg-green-400/80 border-green-300 text-white shadow-lg shadow-green-400/30'
+                      ? 'gsc-auth-done border-green-300 gsc-auth-ink '
                       : isActive
-                        ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-600/30 auth-pulse-ring'
-                        : 'bg-gray-800 border-gray-600 text-gray-500'
+                        ? 'gsc-auth-button border-blue-400 gsc-auth-ink  '
+                        : 'gsc-auth-field gsc-auth-border gsc-auth-muted'
                     }`}>
                     {isDone
-                      ? <CheckCircle className="w-5 h-5 auth-check-pop" />
+                      ? <CheckCircle className="w-5 h-5 " />
                       : <Icon className="w-5 h-5" />
                     }
                   </div>
-                  <span className={`text-xs font-medium transition-colors ${isActive ? 'text-white' : isDone ? 'text-green-400' : 'text-gray-500'}`}>
+                  <span className={`text-xs font-medium transition-colors ${isActive ? 'gsc-auth-ink' : isDone ? 'gsc-auth-success' : 'gsc-auth-muted'}`}>
                     {s.label}
                   </span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`h-0.5 w-24 mx-2 mb-5 rounded-full transition-all duration-500 ${isDone ? 'bg-green-400' : 'bg-gray-700'}`} />
+                  <div className={`h-0.5 w-12 sm:w-24 mx-2 mb-5 rounded-full transition-all duration-500 ${isDone ? 'bg-green-400' : 'gsc-auth-divider'}`} />
                 )}
               </div>
             );
@@ -230,24 +225,24 @@ export default function Register() {
         </div>
 
         {/* ── Card ─────────────────────────────────────────────────────────── */}
-        <Card className="shadow-2xl bg-gray-900/95 backdrop-blur-md border border-gray-700 text-white overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400" />
+        <Card className="shadow-sm gsc-auth-card  border gsc-auth-border gsc-auth-ink overflow-hidden">
+          <div className="h-1 gsc-auth-accent" />
 
-          <CardHeader className="pb-4 border-b border-gray-700/80">
+          <CardHeader className="pb-4 border-b gsc-auth-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-                <UserPlus className="w-5 h-5 text-blue-400" />
+              <div className="w-10 h-10 rounded-md gsc-auth-icon border gsc-auth-border flex items-center justify-center">
+                <UserPlus className="w-5 h-5 gsc-auth-link" />
               </div>
               <div>
-                <CardTitle className="text-xl text-white">
+                <CardTitle className="text-xl gsc-auth-ink">
                   {step === 1 ? 'Personal Information' : 'Account Setup'}
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="gsc-auth-muted">
                   {step === 1 ? 'Tell us about yourself — Step 1 of 2' : 'Create your login credentials — Step 2 of 2'}
                 </CardDescription>
               </div>
-              <Badge variant="outline" className="ml-auto text-xs border-gray-600 text-gray-400 bg-gray-800">
-                Step {step} / 2
+              <Badge variant="outline" className="ml-auto text-xs gsc-auth-border gsc-auth-muted gsc-auth-field">
+                Step {step} of 2
               </Badge>
             </div>
           </CardHeader>
@@ -256,7 +251,7 @@ export default function Register() {
 
             {/* ════════════════════ STEP 1 ════════════════════════════════ */}
             {step === 1 && (
-              <div className={`space-y-6 ${stepDir === 'right' ? 'auth-step-right' : 'auth-step-left'}`}>
+              <div className="space-y-6">
 
                 {/* Name */}
                 <section>
@@ -268,17 +263,17 @@ export default function Register() {
                       { field: 'middle_name' as const,label: 'Middle Name', required: false, placeholder: 'Santos' },
                     ].map(({ field, label, required, placeholder }) => (
                       <div key={field} className="space-y-1.5">
-                        <Label className="text-gray-200 text-xs">{label} {required && <span className="text-red-400">*</span>}</Label>
+                        <Label className="gsc-auth-label text-xs">{label} {required && <span className="gsc-auth-error">*</span>}</Label>
                         <div className="relative">
                           <Input value={formData[field]} onChange={set(field)} placeholder={placeholder} required={required} className={inputCls} />
                           {formData[field].trim() && (
-                            <CheckCircle className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-green-400 auth-check-pop" />
+                            <CheckCircle className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 gsc-auth-success " />
                           )}
                         </div>
                       </div>
                     ))}
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-xs">Suffix</Label>
+                      <Label className="gsc-auth-label text-xs">Suffix</Label>
                       <Select value={formData.suffix} onValueChange={v => setFormData(p => ({ ...p, suffix: v }))}>
                         <SelectTrigger className={inputCls}><SelectValue placeholder="None" /></SelectTrigger>
                         <SelectContent>{['Jr.','Sr.','II','III','IV'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
@@ -292,7 +287,7 @@ export default function Register() {
                   <p className={sectionHeadCls}><Users className="w-3.5 h-3.5" /> Organization & Details</p>
                   <div className="space-y-3">
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-xs">Organization <span className="text-red-400">*</span></Label>
+                      <Label className="gsc-auth-label text-xs">Organization <span className="gsc-auth-error">*</span></Label>
                       <Select required value={formData.organization} onValueChange={v => setFormData(p => ({ ...p, organization: v }))}>
                         <SelectTrigger className={inputCls}><SelectValue placeholder="Select organization" /></SelectTrigger>
                         <SelectContent>{Object.entries(ORG_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
@@ -300,11 +295,11 @@ export default function Register() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-gray-200 text-xs">Date of Birth <span className="text-red-400">*</span></Label>
+                        <Label className="gsc-auth-label text-xs">Date of Birth <span className="gsc-auth-error">*</span></Label>
                         <Input type="date" value={formData.date_of_birth} onChange={set('date_of_birth')} required className={`${inputCls} [color-scheme:dark]`} />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-gray-200 text-xs">Gender</Label>
+                        <Label className="gsc-auth-label text-xs">Gender</Label>
                         <Select value={formData.gender} onValueChange={v => setFormData(p => ({ ...p, gender: v }))}>
                           <SelectTrigger className={inputCls}><SelectValue placeholder="Select gender" /></SelectTrigger>
                           <SelectContent>
@@ -316,7 +311,7 @@ export default function Register() {
                         </Select>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-gray-200 text-xs">Marital Status <span className="text-red-400">*</span></Label>
+                        <Label className="gsc-auth-label text-xs">Marital Status <span className="gsc-auth-error">*</span></Label>
                         <Select required value={formData.marital_status} onValueChange={v => setFormData(p => ({ ...p, marital_status: v }))}>
                           <SelectTrigger className={inputCls}><SelectValue placeholder="Select status" /></SelectTrigger>
                           <SelectContent>{['Single','Married','Widowed','Separated','Divorced'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
@@ -331,11 +326,11 @@ export default function Register() {
                   <p className={sectionHeadCls}><Briefcase className="w-3.5 h-3.5" /> Work & Education</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-xs">Occupation</Label>
+                      <Label className="gsc-auth-label text-xs">Occupation</Label>
                       <Input value={formData.occupation} onChange={set('occupation')} placeholder="Engineer, Teacher, Student…" className={inputCls} />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-xs">Educational Background</Label>
+                      <Label className="gsc-auth-label text-xs">Educational Background</Label>
                       <Input value={formData.educational_background} onChange={set('educational_background')} placeholder="Bachelor's Degree…" className={inputCls} />
                     </div>
                   </div>
@@ -346,28 +341,28 @@ export default function Register() {
                   <p className={sectionHeadCls}><Phone className="w-3.5 h-3.5" /> Contact Information</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-xs">Email <span className="text-red-400">*</span></Label>
+                      <Label className="gsc-auth-label text-xs">Email <span className="gsc-auth-error">*</span></Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                         <Input type="email" required value={formData.email} onChange={set('email')} placeholder="juan@example.com" className={`pl-9 ${inputCls}`} />
-                        {formData.email.includes('@') && <CheckCircle className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-green-400 auth-check-pop" />}
+                        {formData.email.includes('@') && <CheckCircle className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 gsc-auth-success " />}
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-xs">Phone <span className="text-red-400">*</span></Label>
+                      <Label className="gsc-auth-label text-xs">Phone <span className="gsc-auth-error">*</span></Label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                         <Input type="tel" required value={formData.phone}
                           onChange={e => { const v = e.target.value.replace(/\D/g,''); if (v.length <= 11) setFormData(p => ({ ...p, phone: v })); }}
                           placeholder="09123456789" maxLength={11} className={`pl-9 ${inputCls} ${formData.phone.length === 11 ? 'border-green-400/60' : ''}`} />
                       </div>
-                      <p className={`text-xs transition-colors ${formData.phone.length === 11 ? 'text-green-400' : formData.phone.length > 0 ? 'text-orange-400' : 'text-gray-500'}`}>
+                      <p className={`text-xs transition-colors ${formData.phone.length === 11 ? 'gsc-auth-success' : formData.phone.length > 0 ? 'text-orange-400' : 'gsc-auth-muted'}`}>
                         {formData.phone.length}/11 digits{formData.phone.length === 11 ? ' ✓' : ''}
                       </p>
                     </div>
                   </div>
                   <div className="mt-3 space-y-1.5">
-                    <Label className="text-gray-200 text-xs">Address</Label>
+                    <Label className="gsc-auth-label text-xs">Address</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3 w-4 h-4 text-white/40" />
                       <Textarea value={formData.address} onChange={set('address')} placeholder="123 Main St, Barangay, City, Province" rows={2} className={`pl-9 ${inputCls}`} />
@@ -377,15 +372,15 @@ export default function Register() {
 
                 {/* Spouse (conditional) */}
                 {formData.marital_status === 'Married' && (
-                  <section className="p-4 rounded-xl bg-gray-800/60 border border-gray-700 auth-step-right">
+                  <section className="p-4 rounded-md gsc-auth-inset border gsc-auth-border ">
                     <p className={sectionHeadCls}><Heart className="w-3.5 h-3.5" /> Spouse Information</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-gray-200 text-xs">Spouse Name</Label>
+                        <Label className="gsc-auth-label text-xs">Spouse Name</Label>
                         <Input value={formData.spouse_name} onChange={set('spouse_name')} placeholder="Spouse full name" className={inputCls} />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-gray-200 text-xs">Date of Marriage</Label>
+                        <Label className="gsc-auth-label text-xs">Date of Marriage</Label>
                         <Input type="date" value={formData.date_of_marriage} onChange={set('date_of_marriage')} className={`${inputCls} [color-scheme:dark]`} />
                       </div>
                     </div>
@@ -396,8 +391,8 @@ export default function Register() {
                 <section>
                   <p className={sectionHeadCls}><Users className="w-3.5 h-3.5" /> Parents</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Mother's Name</Label><Input value={formData.mother_name} onChange={set('mother_name')} placeholder="Maria Dela Cruz" className={inputCls} /></div>
-                    <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Father's Name</Label><Input value={formData.father_name} onChange={set('father_name')} placeholder="Jose Dela Cruz" className={inputCls} /></div>
+                    <div className="space-y-1.5"><Label className="gsc-auth-label text-xs">Mother's Name</Label><Input value={formData.mother_name} onChange={set('mother_name')} placeholder="Maria Dela Cruz" className={inputCls} /></div>
+                    <div className="space-y-1.5"><Label className="gsc-auth-label text-xs">Father's Name</Label><Input value={formData.father_name} onChange={set('father_name')} placeholder="Jose Dela Cruz" className={inputCls} /></div>
                   </div>
                 </section>
 
@@ -405,31 +400,31 @@ export default function Register() {
                 <section>
                   <div className="flex items-center justify-between mb-3">
                     <p className={`${sectionHeadCls} mb-0`}><BookOpen className="w-3.5 h-3.5" /> Children</p>
-                    <Button type="button" variant="outline" size="sm" onClick={addChild} className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent h-7 text-xs">
+                    <Button type="button" variant="outline" size="sm" onClick={addChild} className="gsc-auth-border gsc-auth-label hover:bg-[var(--auth-inset)] hover:text-[var(--auth-ink)] bg-transparent h-7 text-xs">
                       <Plus className="w-3 h-3 mr-1" /> Add
                     </Button>
                   </div>
                   <div className="space-y-2">
                     {children.map((child, i) => (
-                      <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 border border-gray-700 rounded-xl bg-gray-800/60 relative">
+                      <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 border gsc-auth-border rounded-md gsc-auth-inset relative">
                         {children.length > 1 && (
                           <button type="button" onClick={() => removeChild(i)}
-                            className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500/30 text-red-200 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all">
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500/30 text-red-200 hover:bg-red-500 hover:text-[var(--auth-ink)] flex items-center justify-center transition-all">
                             <X className="w-3 h-3" />
                           </button>
                         )}
-                        <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Child {i + 1} Name</Label><Input value={child.name} onChange={e => updateChild(i,'name',e.target.value)} placeholder="Child's full name" className={inputCls} /></div>
-                        <div className="space-y-1.5"><Label className="text-gray-200 text-xs">Birthday</Label><Input type="date" value={child.birthday} onChange={e => updateChild(i,'birthday',e.target.value)} className={`${inputCls} [color-scheme:dark]`} /></div>
+                        <div className="space-y-1.5"><Label className="gsc-auth-label text-xs">Child {i + 1} Name</Label><Input value={child.name} onChange={e => updateChild(i,'name',e.target.value)} placeholder="Child's full name" className={inputCls} /></div>
+                        <div className="space-y-1.5"><Label className="gsc-auth-label text-xs">Birthday</Label><Input type="date" value={child.birthday} onChange={e => updateChild(i,'birthday',e.target.value)} className={`${inputCls} [color-scheme:dark]`} /></div>
                       </div>
                     ))}
                   </div>
                 </section>
 
-                <div className="flex gap-3 pt-2 border-t border-gray-700">
-                  <Button type="button" variant="outline" onClick={() => navigate('/')} className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent">
+                <div className="flex gap-3 pt-2 border-t gsc-auth-border">
+                  <Button type="button" variant="outline" onClick={() => navigate('/')} className="gsc-auth-border gsc-auth-label hover:bg-[var(--auth-inset)] hover:text-[var(--auth-ink)] bg-transparent">
                     <ArrowLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
-                  <Button type="button" onClick={handleNext} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0 transition-all duration-200 group">
+                  <Button type="button" onClick={handleNext} className="flex-1 gsc-auth-button hover:bg-[var(--auth-button-hover)] gsc-auth-ink border-0 transition-all duration-200 group">
                     Next: Account Setup
                     <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
                   </Button>
@@ -439,28 +434,28 @@ export default function Register() {
 
             {/* ════════════════════ STEP 2 ════════════════════════════════ */}
             {step === 2 && (
-              <form onSubmit={handleSubmit} className={`space-y-6 ${stepDir === 'right' ? 'auth-step-right' : 'auth-step-left'}`}>
+              <form onSubmit={handleSubmit} className="space-y-6">
 
                 <section>
                   <p className={sectionHeadCls}><Shield className="w-3.5 h-3.5" /> Create Your Account</p>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="username" className="text-gray-200 text-xs">Username <span className="text-red-400">*</span></Label>
+                      <Label htmlFor="username" className="gsc-auth-label text-xs">Username <span className="gsc-auth-error">*</span></Label>
                       <div className="relative">
                         <Input id="username" type="text" required value={username}
                           onChange={e => setUsername(e.target.value)}
                           placeholder="choose_a_username" autoComplete="username" minLength={3}
                           className={`${inputCls} ${username.length >= 3 ? 'border-green-400/60 focus:border-green-400' : ''}`} />
                         {username.length >= 3 && (
-                          <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400 auth-check-pop" />
+                          <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 gsc-auth-success " />
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">At least 3 characters — used for login</p>
+                      <p className="text-xs gsc-auth-muted">At least 3 characters — used for login</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label htmlFor="password" className="text-gray-200 text-xs">Password <span className="text-red-400">*</span></Label>
+                        <Label htmlFor="password" className="gsc-auth-label text-xs">Password <span className="gsc-auth-error">*</span></Label>
                         <Input id="password" type={showPassword ? 'text' : 'password'} required
                           value={password} onChange={e => setPassword(e.target.value)}
                           placeholder="••••••••" minLength={6} autoComplete="new-password"
@@ -474,22 +469,22 @@ export default function Register() {
                               />
                             </div>
                             <p className={`text-xs font-medium ${
-                              pwStrength.score <= 1 ? 'text-red-400' :
+                              pwStrength.score <= 1 ? 'gsc-auth-error' :
                               pwStrength.score <= 2 ? 'text-orange-400' :
-                              pwStrength.score <= 3 ? 'text-yellow-400' : 'text-green-400'
+                              pwStrength.score <= 3 ? 'text-yellow-400' : 'gsc-auth-success'
                             }`}>{pwStrength.label}</p>
                           </div>
                         )}
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="confirm_password" className="text-gray-200 text-xs">Confirm Password <span className="text-red-400">*</span></Label>
+                        <Label htmlFor="confirm_password" className="gsc-auth-label text-xs">Confirm Password <span className="gsc-auth-error">*</span></Label>
                         <Input id="confirm_password" type={showPassword ? 'text' : 'password'} required
                           value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                           placeholder="••••••••" minLength={6} autoComplete="new-password"
                           className={`${inputCls} ${confirmPassword && password === confirmPassword ? 'border-green-400/60' : ''}`} />
                         {confirmPassword && (
-                          <p className={`text-xs font-medium ${password === confirmPassword ? 'text-green-400' : 'text-red-400'}`}>
+                          <p className={`text-xs font-medium ${password === confirmPassword ? 'gsc-auth-success' : 'gsc-auth-error'}`}>
                             {password === confirmPassword ? '✓ Passwords match' : '✗ Do not match'}
                           </p>
                         )}
@@ -502,40 +497,40 @@ export default function Register() {
                         type="checkbox"
                         checked={showPassword}
                         onChange={e => setShowPassword(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-600 bg-gray-800 accent-blue-500 cursor-pointer"
+                        className="w-4 h-4 rounded gsc-auth-border gsc-auth-field accent-[var(--auth-button)] cursor-pointer"
                       />
-                      <span className="text-xs text-gray-400">Show passwords</span>
+                      <span className="text-xs gsc-auth-muted">Show passwords</span>
                     </label>
                   </div>
                 </section>
 
                 <section>
                   <p className={sectionHeadCls}><CheckCircle className="w-3.5 h-3.5" /> Review Your Information</p>
-                  <div className="rounded-xl border border-gray-700 bg-gray-800/60 divide-y divide-gray-700 max-h-60 overflow-y-auto">
+                  <div className="rounded-md border gsc-auth-border gsc-auth-inset divide-y divide-gray-700 max-h-60 overflow-y-auto">
                     {summary.map(({ label, value }) => (
                       <div key={label} className="grid grid-cols-2 px-4 py-2 text-xs">
-                        <span className="text-gray-400 font-medium">{label}</span>
-                        <span className="text-white truncate">{value}</span>
+                        <span className="gsc-auth-muted font-medium">{label}</span>
+                        <span className="gsc-auth-ink break-words">{value}</span>
                       </div>
                     ))}
                     {filledChildren.length > 0 && (
                       <div className="grid grid-cols-2 px-4 py-2 text-xs">
-                        <span className="text-gray-400 font-medium">Children</span>
-                        <span className="text-white">{filledChildren.map(c => c.name).join(', ')}</span>
+                        <span className="gsc-auth-muted font-medium">Children</span>
+                        <span className="gsc-auth-ink">{filledChildren.map(c => c.name).join(', ')}</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Verify your info above before submitting.</p>
+                  <p className="text-xs gsc-auth-muted mt-2">Verify your info above before submitting.</p>
                 </section>
 
-                <section className="rounded-xl border border-blue-800/60 bg-blue-950/30 p-4">
+                <section className="rounded-md border gsc-auth-border gsc-auth-inset p-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                      <Shield className="w-4 h-4 text-blue-400" />
+                    <div className="w-8 h-8 rounded-full gsc-auth-icon flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-4 h-4 gsc-auth-link" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-blue-300 mb-1">Data Privacy Notice</p>
-                      <p className="text-xs text-gray-300 leading-relaxed">
+                      <p className="text-sm font-semibold gsc-auth-link mb-1">Data Privacy Notice</p>
+                      <p className="text-xs gsc-auth-label leading-relaxed">
                         In accordance with the Data Privacy Act of 2012 (Republic Act No. 10173),
                         the personal information you provide will be collected, processed, and stored
                         solely for church membership records and related ministry purposes. Your data
@@ -547,14 +542,14 @@ export default function Register() {
                 </section>
 
                 <section>
-                  <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-xl border border-gray-700 bg-gray-800/60 p-3.5">
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none rounded-md border gsc-auth-border gsc-auth-inset p-3.5">
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
                       onChange={e => setAgreedToTerms(e.target.checked)}
-                      className="w-4 h-4 mt-0.5 rounded border-gray-600 bg-gray-800 accent-blue-500 cursor-pointer flex-shrink-0"
+                      className="w-4 h-4 mt-0.5 rounded gsc-auth-border gsc-auth-field accent-[var(--auth-button)] cursor-pointer flex-shrink-0"
                     />
-                    <span className="text-xs text-gray-300 leading-relaxed">
+                    <span className="text-xs gsc-auth-label leading-relaxed">
                       I agree to the collection and use of my personal information for
                       church membership records, and confirm that the details I've provided
                       are accurate to the best of my knowledge, in accordance with the
@@ -563,11 +558,11 @@ export default function Register() {
                   </label>
                 </section>
 
-                <div className="flex gap-3 pt-2 border-t border-gray-700">
-                  <Button type="button" variant="outline" onClick={handleBack} className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent">
+                <div className="flex gap-3 pt-2 border-t gsc-auth-border">
+                  <Button type="button" variant="outline" onClick={handleBack} className="gsc-auth-border gsc-auth-label hover:bg-[var(--auth-inset)] hover:text-[var(--auth-ink)] bg-transparent">
                     <ArrowLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
-                  <Button type="submit" disabled={loading || !agreedToTerms} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0 transition-all duration-200 gap-2">
+                  <Button type="submit" disabled={loading || !agreedToTerms} className="flex-1 gsc-auth-button hover:bg-[var(--auth-button-hover)] gsc-auth-ink border-0 transition-all duration-200 gap-2">
                     {loading
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
                       : <><CheckCircle className="w-4 h-4" /> Submit Registration</>
@@ -580,9 +575,9 @@ export default function Register() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-gray-500 mt-4">
+        <p className="text-center text-xs gsc-auth-muted mt-4">
           Already have an account?{' '}
-          <button onClick={() => navigate('/user/login')} className="text-blue-400 hover:text-blue-300 underline font-medium transition-colors">
+          <button onClick={() => navigate('/user/login')} className="gsc-auth-link hover:text-blue-300 underline font-medium transition-colors">
             Sign in here
           </button>
         </p>
