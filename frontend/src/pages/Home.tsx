@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, LogIn, BookOpen, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare, Download, Lock } from "lucide-react";
+import { UserPlus, Film, Calendar, Users, Heart, MapPin, Clock, MessageSquare, Download, Lock, ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ChatSupportWidget from "@/components/ChatSupportWidget";
 import { useUserAuth } from "@/hooks/useUserAuth";
@@ -10,7 +10,9 @@ import UserMenu from "@/components/UserMenu";
 import { useAppUpdateAvailable } from "@/hooks/useAppUpdateAvailable";
 import InstallAppModal from "@/components/InstallAppModal";
 import { isStandalone } from "@/lib/installPrompt";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+import "./Home.css";
 
 interface HomepageImage {
   id: string;
@@ -34,21 +36,13 @@ export default function Home() {
   const { isLoggedIn, personId } = useUserAuth();
   const [images, setImages] = useState<HomepageImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [userProfile, setUserProfile] = useState<{ full_name: string; profile_picture: string | null } | null>(null);
 
-  // ── Logo update animation ──
   const updateAvailable = useAppUpdateAvailable();
   const [showUpdateAnim, setShowUpdateAnim] = useState(false);
-  const [logoTapped, setLogoTapped] = useState(false);
-
-  const handleLogoClick = () => {
-    setLogoTapped(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => setLogoTapped(false), 500);
-  };
-
   // ── Install app button ──
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [loginPromptFeature, setLoginPromptFeature] = useState<string | null>(null);
@@ -110,367 +104,104 @@ export default function Home() {
     fetchEvents();
   }, []);
 
-  // Auto-advance slideshow every 4 seconds
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (images.length <= 1 || paused) return;
+    const timer = window.setInterval(() => {
+      setCurrentImageIndex(index => (index + 1) % images.length);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [images.length, paused]);
 
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
-        setIsTransitioning(false);
-      }, 500); // Transition duration
-    }, 4000); // 4 seconds
+  const currentImage = images[currentImageIndex];
+  useEffect(() => setImageFailed(false), [currentImage?.image_url]);
 
-    return () => clearInterval(interval);
-  }, [images.length]);
-
-  const currentImage = images[currentImageIndex] || {
-    image_url: 'https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/0fa8.png',
-    title: 'Welcome to GSC Members Profile Registration',
-    description: 'Join our community and stay connected with the church family',
+  const openMemberPage = (path: string, label: string) => {
+    if (isLoggedIn) navigate(path);
+    else setLoginPromptFeature(label);
+  };
+  const moveSlide = (direction: number) => {
+    setPaused(true);
+    setCurrentImageIndex(index => (index + direction + images.length) % images.length);
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
-      {/* Header with Logo */}
-      <header className="w-full bg-white/80 backdrop-blur-sm shadow-sm">
-        <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-3 sm:gap-4 justify-center">
-            <button
-              type="button"
-              onClick={handleLogoClick}
-              aria-label="UCCP-Good Samaritan Church home"
-              className="relative inline-flex active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-full"
-            >
-              {showUpdateAnim && <span className="logo-update-ring" aria-hidden="true" />}
-              {logoTapped && !showUpdateAnim && <span className="logo-tap-ring" aria-hidden="true" />}
-              <img
-                src="/uccp-logo-transparent.png"
-                alt="UCCP-Good Samaritan Church Logo"
-                className={`h-12 w-12 sm:h-16 sm:w-16 object-contain flex-shrink-0 pointer-events-none ${
-                  showUpdateAnim ? 'animate-logo-updating' : logoTapped ? 'animate-logo-tap' : 'animate-logo-breathe'
-                }`}
-              />
-            </button>
-            <div>
-              <h1 className="text-base sm:text-lg font-bold text-slate-800 text-center sm:text-left leading-tight">UCCP-Good Samaritan Church</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 justify-center flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/feed")}
-              className="gap-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Feed</span>
-            </Button>
-            {isLoggedIn && userProfile ? (
-              <UserMenu name={userProfile.full_name} picture={userProfile.profile_picture} />
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/user/login")}
-                  className="gap-2"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span className="hidden sm:inline">Login</span>
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/register")}
-                  className="gap-2"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Register</span>
-                </Button>
-              </>
-            )}
+    <div className="gsc-home">
+      <a className="gsc-skip" href="#main-content">Skip to content</a>
+      <header className="gsc-header">
+        <div className="gsc-wrap gsc-header-inner">
+          <a href="/" className="gsc-brand">
+            <img src="/uccp-logo-transparent.png" alt="UCCP logo" width="52" height="52" />
+            <span><small>UNITED CHURCH OF CHRIST IN THE PHILIPPINES</small><strong>Good Samaritan Church</strong></span>
+          </a>
+          <nav aria-label="Main navigation" className="gsc-nav">
+            <a href="#church-life">Church life</a>
+            <a href="#upcoming-events">Events</a>
+            <button onClick={() => openMemberPage('/gallery', 'Gallery')}>Gallery</button>
+          </nav>
+          <div className="gsc-account">
+            {isLoggedIn && userProfile ? <UserMenu name={userProfile.full_name} picture={userProfile.profile_picture} /> : <>
+              <Button variant="ghost" onClick={() => navigate('/user/login')}>Log in</Button>
+              <Button className="gsc-primary" onClick={() => navigate('/register')}>Register <UserPlus className="ml-2 h-4 w-4" /></Button>
+            </>}
           </div>
         </div>
       </header>
-
-      {/* Animated Brand Intro — separate from the slideshow */}
-      <div className="w-full bg-gradient-to-b from-slate-900 to-slate-800 py-6 flex flex-col items-center justify-center">
-        <img
-          src="/uccp-logo-transparent.png"
-          alt="UCCP-Good Samaritan Church Logo"
-          className="h-16 w-16 md:h-20 md:w-20 object-contain drop-shadow-2xl animate-hero-logo"
-        />
-        <h1 className="mt-2 text-lg md:text-xl font-bold text-white uppercase tracking-wide animate-hero-text drop-shadow-lg">
-          Good Samaritan Church
-        </h1>
-        <span className="h-0.5 w-16 bg-gradient-to-r from-transparent via-white to-transparent mt-2 animate-hero-underline" />
-      </div>
-
-      {/* Hero Section with Slideshow */}
-      <div className="relative">
-        <div className="w-full h-[400px] md:h-[500px] overflow-hidden relative">
-          {/* Slideshow Images */}
-          <div className={`w-full h-full transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-            <img 
-              src={currentImage.image_url}
-              alt={currentImage.title || 'Church'}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
-          
-          {/* Slideshow Indicators */}
-          {images.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-              {images.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentImageIndex 
-                      ? 'bg-white w-8' 
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
-          
-          {/* Welcome Text Overlay — first slide only */}
-          {currentImageIndex === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <div className={`max-w-4xl mx-auto space-y-6 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-              <h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-2xl">
-                Welcome to
-              </h2>
-              <h3 className="text-3xl md:text-5xl font-bold text-white drop-shadow-2xl">
-                {currentImage.title || 'GSC Members Profile Registration'}
-              </h3>
-              <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg mt-4">
-                {currentImage.description || 'Join our community of faith and fellowship. Register today to become part of our growing church family.'}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                {isLoggedIn ? (
-                  <Button
-                    size="lg"
-                    onClick={() => navigate("/feed")}
-                    className="bg-white text-blue-900 hover:bg-blue-50 shadow-xl text-lg px-8"
-                  >
-                    <MessageSquare className="mr-2 h-5 w-5" />
-                    Go to Feed
-                  </Button>
-                ) : (
-                  <>
-                    <Button 
-                      size="lg"
-                      onClick={() => navigate("/register")}
-                      className="bg-white text-blue-900 hover:bg-blue-50 shadow-xl text-lg px-8"
-                    >
-                      <UserPlus className="mr-2 h-5 w-5" />
-                      Register Now
-                    </Button>
-                    <Button 
-                      size="lg"
-                      variant="outline"
-                      onClick={() => navigate("/user/login")}
-                      className="bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 shadow-xl text-lg px-8"
-                    >
-                      <LogIn className="mr-2 h-5 w-5" />
-                      Member Login
-                    </Button>
-                  </>
-                )}
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate("/presentation")}
-                  className="bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 shadow-xl text-lg px-8"
-                >
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  How to Use
-                </Button>
-              </div>
+      {showUpdateAnim && <div className="gsc-update" role="status">Updating the website…</div>}
+      <main id="main-content">
+        <section className="gsc-hero" aria-label="Welcome to Good Samaritan Church">
+          {currentImage && !imageFailed && <img className="gsc-hero-photo" src={currentImage.image_url} alt={currentImage.title || 'Good Samaritan Church community'} onError={() => setImageFailed(true)} fetchPriority="high" />}
+          <div className="gsc-hero-shade" />
+          <div className="gsc-wrap gsc-hero-content">
+            <p className="gsc-eyebrow">FAITH · FELLOWSHIP · SERVICE</p>
+            <h1>Welcome to<br /><span>Good Samaritan Church.</span></h1>
+            <p className="gsc-hero-description">A place to worship, serve, and grow together. Stay connected with our church family and the life of our community.</p>
+            <div className="gsc-hero-actions">
+              <Button size="lg" className="gsc-gold" onClick={() => isLoggedIn ? navigate('/feed') : navigate('/register')}>{isLoggedIn ? 'Open community feed' : 'Register as a member'}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <a className="gsc-hero-link" href="#upcoming-events">See upcoming events <ArrowRight className="h-4 w-4" /></a>
             </div>
           </div>
-          )}
-        </div>
-      </div>
-
-      {/* Information Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition-shadow">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UserPlus className="h-8 w-8 text-blue-600" />
+          {images.length > 1 && <div className="gsc-wrap gsc-slideshow">
+            <p>{currentImage?.title || 'Church life'}<span>{currentImageIndex + 1} / {images.length}</span></p>
+            <div className="gsc-slide-controls">
+              <button aria-label="Previous photo" onClick={() => moveSlide(-1)}><ChevronLeft /></button>
+              <button aria-label={paused ? 'Play slideshow' : 'Pause slideshow'} onClick={() => setPaused(value => !value)}>{paused ? <Play /> : <Pause />}</button>
+              <button aria-label="Next photo" onClick={() => moveSlide(1)}><ChevronRight /></button>
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Easy Registration</h3>
-            <p className="text-slate-600">
-              Simple and quick registration process to join our church community
-            </p>
+          </div>}
+        </section>
+        <section className="gsc-intro gsc-wrap" id="church-life">
+          <div><p className="gsc-eyebrow">OUR CHURCH COMMUNITY</p><h2>Connected through faith.<br />Present for one another.</h2></div>
+          <div><p>Find church updates, share moments from our activities, and keep in touch with fellow members—all in one place.</p><button className="gsc-text-link" onClick={() => navigate('/presentation')}>New here? Learn how to use the website <ArrowRight className="h-4 w-4" /></button></div>
+        </section>
+        <section className="gsc-events-section" id="upcoming-events">
+          <div className="gsc-wrap">
+            <div className="gsc-section-heading"><div><p className="gsc-eyebrow">WHAT’S COMING UP</p><h2>Events & announcements</h2></div><button className="gsc-text-link" onClick={() => openMemberPage('/events', 'Events')}>View all events <ArrowRight className="h-4 w-4" /></button></div>
+            {upcomingEvents.length > 0 ? <div className="gsc-event-grid">{upcomingEvents.map(event => {
+              const date = new Date(event.event_date + 'T00:00:00');
+              return <button key={event.id} className="gsc-event-card" onClick={() => openMemberPage('/events', 'Events')}>
+                <div className="gsc-event-date"><span>{date.toLocaleDateString('en-US', { month: 'short' })}</span><strong>{date.getDate()}</strong></div>
+                <div><Badge variant="outline">{event.category}</Badge><h3>{event.title}</h3>{event.event_time && <p><Clock />{event.event_time.slice(0, 5)}</p>}{event.location && <p><MapPin />{event.location}</p>}</div>
+              </button>;
+            })}</div> : <div className="gsc-empty"><Calendar /><div><h3>Watch this space for upcoming activities.</h3><p>Church events and announcements will appear here when posted.</p></div></div>}
           </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition-shadow">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Community</h3>
-            <p className="text-slate-600">
-              Be part of a vibrant and supportive church community
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition-shadow">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Profile Management</h3>
-            <p className="text-slate-600">
-              Manage your information and stay connected with the church
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Upcoming Events Section */}
-      {upcomingEvents.length > 0 && (
-        <div className="bg-muted/50 py-16">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between max-w-6xl mx-auto mb-8">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-7 w-7 text-primary" />
-                <h2 className="text-2xl font-bold text-foreground">Upcoming Events</h2>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => navigate('/events')}>
-                View All
-              </Button>
-            </div>
-            <div className="grid md:grid-cols-3 gap-4 max-w-6xl mx-auto">
-              {upcomingEvents.map(event => (
-                <div
-                  key={event.id}
-                  onClick={() => navigate('/events')}
-                  className="bg-card border border-border rounded-2xl p-5 cursor-pointer hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex flex-col items-center justify-center flex-shrink-0">
-                      <p className="text-xs font-semibold text-primary uppercase leading-none">
-                        {new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}
-                      </p>
-                      <p className="text-lg font-bold text-primary leading-none">
-                        {new Date(event.event_date).getDate()}
-                      </p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Badge variant="outline" className="text-xs mb-1">{event.category}</Badge>
-                      <p className="font-semibold text-foreground text-sm line-clamp-1">{event.title}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    {event.event_time && (
-                      <p className="flex items-center gap-1.5"><Clock className="h-3 w-3" />{event.event_time}</p>
-                    )}
-                    {event.location && (
-                      <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" />{event.location}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Links Section */}
-      <div className="container mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground text-center mb-8">Explore More</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-5 gap-4 max-w-5xl mx-auto">
-          {[
-            { label: 'Community Feed', icon: MessageSquare, path: '/feed', desc: 'Posts & updates', color: 'text-indigo-600 bg-indigo-50' },
-            { label: 'Member Directory', icon: Users, path: '/directory', desc: 'Browse all church members', color: 'text-blue-600 bg-blue-50' },
-            { label: 'Events', icon: Calendar, path: '/events', desc: 'Upcoming services & activities', color: 'text-purple-600 bg-purple-50' },
-            { label: 'Prayer Wall', icon: Heart, path: '/prayer-requests', desc: 'Share & pray together', color: 'text-rose-600 bg-rose-50' },
-            { label: 'Gallery', icon: Film, path: '/gallery', desc: 'Photos & videos', color: 'text-green-600 bg-green-50' },
-          ].map(({ label, icon: Icon, path, desc, color }) => (
-            <button
-              key={path}
-              onClick={() => isLoggedIn ? navigate(path) : setLoginPromptFeature(label)}
-              className="relative bg-card border border-border rounded-2xl p-5 text-center hover:shadow-md transition-all group"
-            >
-              <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
-                <Icon className="h-6 w-6" />
-              </div>
-              <p className="font-semibold text-foreground text-sm">{label}</p>
-              <p className="text-xs text-muted-foreground mt-1">{desc}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Login/Register prompt for guests clicking a members-only feature */}
-      <Dialog open={!!loginPromptFeature} onOpenChange={(o) => !o && setLoginPromptFeature(null)}>
-        <DialogContent className="max-w-sm text-center">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-1">
-            <Lock className="w-6 h-6 text-primary" />
-          </div>
-          <h3 className="text-lg font-bold text-foreground">Members Only</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {loginPromptFeature} is available to registered church members.
-            Sign in or register to continue.
-          </p>
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => { setLoginPromptFeature(null); navigate('/user/login'); }}>
-              <LogIn className="w-4 h-4 mr-1.5" /> Log In
-            </Button>
-            <Button size="sm" className="flex-1" onClick={() => { setLoginPromptFeature(null); navigate('/register'); }}>
-              <UserPlus className="w-4 h-4 mr-1.5" /> Register
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Footer */}
-      <footer className="bg-slate-800 text-white py-8 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <img 
-              src="/uccp-logo-transparent.png"
-              alt="UCCP Logo"
-              className="h-12 w-12 object-contain"
-            />
-            <div className="text-left">
-              <p className="font-bold">UCCP-Good Samaritan Church</p>
-            </div>
-          </div>
-          <p className="text-slate-400 text-sm mb-3">
-            © 2024 GSC Members Profile Registration. All rights reserved.
-          </p>
-          {!alreadyInstalled && (
-            <Button
-              size="sm"
-              onClick={() => setShowInstallModal(true)}
-              className="gap-1.5 mb-3"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download the App
-            </Button>
-          )}
-          <br />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/admin/login')}
-            className="text-slate-400 hover:text-white text-xs"
-          >
-            Admin Access
-          </Button>
-        </div>
+        </section>
+        <section className="gsc-wrap gsc-member-section">
+          <div className="gsc-section-heading"><div><p className="gsc-eyebrow">FOR OUR MEMBERS</p><h2>Your church, within reach.</h2></div>{!isLoggedIn && <p className="gsc-member-note"><Lock className="h-4 w-4" />Log in to access member features</p>}</div>
+          <div className="gsc-member-grid">{[
+            { label: 'Community feed', icon: MessageSquare, path: '/feed', desc: 'Read updates and share with fellow members.' },
+            { label: 'Member directory', icon: Users, path: '/directory', desc: 'Find and connect with your church family.' },
+            { label: 'Prayer wall', icon: Heart, path: '/prayer-requests', desc: 'Share a prayer request and pray for others.' },
+            { label: 'Photo & video gallery', icon: Film, path: '/gallery', desc: 'Look back on worship, fellowship, and service.' },
+          ].map(({ label, icon: Icon, path, desc }) => <button className="gsc-member-card" key={path} onClick={() => openMemberPage(path, label)}><Icon /><h3>{label}</h3><p>{desc}</p><span>{isLoggedIn ? 'Open' : 'Members only'}<ArrowRight className="h-4 w-4" /></span></button>)}</div>
+        </section>
+      </main>
+      <footer className="gsc-footer">
+        <div className="gsc-wrap gsc-footer-main"><div className="gsc-footer-brand"><img src="/uccp-logo-transparent.png" alt="" width="48" height="48" /><div><strong>Good Samaritan Church</strong><p>United Church of Christ in the Philippines</p></div></div><div className="gsc-footer-links"><button onClick={() => navigate('/presentation')}>Website guide</button>{!alreadyInstalled && <button onClick={() => setShowInstallModal(true)}><Download className="h-4 w-4" />Install app</button>}<button onClick={() => navigate('/admin/login')}>Admin access</button></div></div>
+        <div className="gsc-wrap gsc-footer-bottom"><p>© {new Date().getFullYear()} UCCP–Good Samaritan Church. All rights reserved.</p><span>Faith. Fellowship. Service.</span></div>
       </footer>
+      <Dialog open={!!loginPromptFeature} onOpenChange={open => !open && setLoginPromptFeature(null)}>
+        <DialogContent className="max-w-sm"><DialogTitle>Sign in to your church account</DialogTitle><DialogDescription>{loginPromptFeature} is available to registered members. Log in or register to continue.</DialogDescription><div className="flex gap-3 pt-2"><Button variant="outline" className="flex-1" onClick={() => { setLoginPromptFeature(null); navigate('/user/login'); }}>Log in</Button><Button className="flex-1" onClick={() => { setLoginPromptFeature(null); navigate('/register'); }}>Register</Button></div></DialogContent>
+      </Dialog>
       <ChatSupportWidget />
       <InstallAppModal open={showInstallModal} onClose={() => setShowInstallModal(false)} />
     </div>
