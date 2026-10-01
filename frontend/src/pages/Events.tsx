@@ -48,22 +48,28 @@ function isUpcoming(dateStr: string) {
 export default function Events() {
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
+  const [loadError, setLoadError] = useState(false);
+  const [reload, setReload] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const { data } = await supabase
+      setLoading(true); setLoadError(false);
+      try {
+      const { data, error } = await supabase
         .from('events')
         .select('*')
         .eq('is_active', true)
         .order('event_date', { ascending: true });
+      if (error) throw error;
       setEvents((data || []) as Event[]);
-      setLoading(false);
+      } catch { setLoadError(true); }
+      finally { setLoading(false); }
     };
     fetchEvents();
-  }, []);
+  }, [reload]);
 
   const filtered = events
     .filter(e => tab === 'upcoming' ? isUpcoming(e.event_date) : !isUpcoming(e.event_date))
@@ -137,7 +143,7 @@ export default function Events() {
         </div>
 
         {/* Events list */}
-        {loading ? (
+        {loadError && !loading ? <div role="alert">Could not load events. <Button variant="outline" onClick={() => setReload(value => value + 1)}>Try again</Button></div> : loading ? (
           <div className="text-center py-20 text-muted-foreground">Loading events…</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">

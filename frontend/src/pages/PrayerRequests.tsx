@@ -25,6 +25,7 @@ export default function PrayerRequests() {
   const { toast } = useToast();
 
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
+  const [loadError, setLoadError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -48,13 +49,13 @@ export default function PrayerRequests() {
   }, [isLoggedIn, personId]);
 
   const fetchRequests = async () => {
-    const { data } = await supabase
-      .from('prayer_requests')
-      .select('id, requester_name, request, is_answered, created_at')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false });
-    setRequests((data || []) as PrayerRequest[]);
-    setLoading(false);
+    setLoading(true); setLoadError(false);
+    try {
+      const { data, error } = await supabase.from('prayer_requests').select('id, requester_name, request, is_answered, created_at').eq('is_public', true).order('created_at', { ascending: false });
+      if (error) throw error;
+      setRequests((data || []) as PrayerRequest[]);
+    } catch { setLoadError(true); }
+    finally { setLoading(false); }
   };
 
   useEffect(() => { fetchRequests(); }, []);
@@ -168,7 +169,7 @@ export default function PrayerRequests() {
         )}
 
         {/* Requests list */}
-        {loading ? (
+        {loadError && !loading ? <div role="alert">Could not load prayer requests. <Button variant="outline" onClick={() => fetchRequests()}>Try again</Button></div> : loading ? (
           <div className="text-center py-20 text-muted-foreground">Loading prayer requests…</div>
         ) : requests.length === 0 ? (
           <div className="text-center py-20">

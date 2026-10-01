@@ -1,3 +1,4 @@
+import ListPagination from "@/components/ListPagination";
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,25 +53,28 @@ export default function MemberDirectory() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [orgFilter, setOrgFilter] = useState('All');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loadError, setLoadError] = useState(false);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      const { data } = await supabase
-        .from('people')
-        .select('uuid, full_name, organization, gender, created_at, profile_picture')
-        .order('full_name', { ascending: true });
-      setMembers((data || []) as Member[]);
-      setLoading(false);
-    };
-    fetchMembers();
-  }, []);
-
-  const filtered = members.filter(m => {
-    const matchSearch = !search ||
-      m.full_name.toLowerCase().includes(search.toLowerCase());
-    const matchOrg = orgFilter === 'All' || m.organization === orgFilter;
-    return matchSearch && matchOrg;
-  });
+    let active = true;
+    setLoading(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        let query = supabase.from('people').select('uuid, full_name, gender, organization, profile_picture, created_at', { count: 'exact' });
+        if (search.trim()) query = query.ilike('full_name', `%${search.trim().replace(/[\\%_]/g, '\\$&')}%`);
+        if (orgFilter !== 'All') query = query.eq('organization', orgFilter);
+        const { data, count, error } = await query.order('full_name').order('uuid').range((page - 1) * 24, page * 24 - 1);
+        if (error) throw error;
+        if (active) { setMembers(data || []); setTotal(count || 0); setLoadError(false); }
+      } catch { if (active) setLoadError(true); }
+      finally { if (active) setLoading(false); }
+    }, 250);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [page, search, orgFilter, reload]);
+  const filtered = members;
 
   return (
     <div className="gsc-managed-page gsc-member-directory-page min-h-screen bg-background">
@@ -91,7 +95,7 @@ export default function MemberDirectory() {
           <Users className="h-12 w-12 text-primary mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground mb-2">Our Members</h2>
           <p className="text-muted-foreground">
-            {members.length} registered members across all organizations
+            {total} members matching your filters
           </p>
         </div>
       </div>
@@ -105,11 +109,11 @@ export default function MemberDirectory() {
               aria-label="Search members by name"
               placeholder="Search by name…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
               className="pl-10"
             />
           </div>
-          <Select value={orgFilter} onValueChange={setOrgFilter}>
+          <Select value={orgFilter} onValueChange={value => { setOrgFilter(value); setPage(1); }}>
             <SelectTrigger aria-label="Filter members by organization" className="w-full sm:w-64">
               <SelectValue />
             </SelectTrigger>
@@ -128,7 +132,7 @@ export default function MemberDirectory() {
           Showing {filtered.length} member{filtered.length !== 1 ? 's' : ''}
         </p>
 
-        {loading ? (
+        {loadError && !loading ? (<div role="alert" className="gsc-load-error">Could not load members. <button onClick={() => setReload(value => value + 1)}>Try again</button></div>) : loading ? (
           <div className="text-center py-20 text-muted-foreground">Loading members…</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
@@ -181,6 +185,7 @@ export default function MemberDirectory() {
             })}
           </div>
         )}
+        {!loading && !loadError && <ListPagination page={page} total={total} pageSize={24} onChange={setPage} />}
       </div>
       <ChatSupportWidget />
     </div>

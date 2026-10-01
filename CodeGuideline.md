@@ -125,3 +125,9 @@ Whenever a new module (such as a component, hook, or utility) or a new page is a
 - `frontend/src/PageStyles.css` contains styles scoped to member and administration pages, imported by `frontend/src/App.tsx`.
 - Events, Prayer Wall, Directory, Gallery and Member Profile retain full-width responsive layouts and use consistent cards, filter controls and accessible focus styles.
 - Gallery previews use keyboard-accessible buttons, separate from download and management actions.
+
+## Reliability helpers
+
+- `frontend/src/components/ListPagination.tsx`: shared result counts and Previous/Next controls. Directory uses server ranges; gallery/admin member lists use local slices.
+- `frontend/src/lib/mediaFiles.ts`: feed/gallery file validation and optional browser photo compression. Backend permissions remain mandatory.
+- `docs/RELIABILITY_AND_PERMISSIONS_REVIEW.md`: verified backend permission findings, validation results and pending release checks.

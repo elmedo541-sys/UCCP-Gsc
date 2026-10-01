@@ -1,3 +1,4 @@
+import ListPagination from "@/components/ListPagination";
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -154,6 +155,7 @@ export default function AdminDashboard() {
   const [showAddMember, setShowAddMember] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
   const [allUpcomingBirthdays, setAllUpcomingBirthdays] = useState<{ person_name: string; days_until: number; birthday_date: string }[]>([]);
+  const [membersError, setMembersError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [selectedPersonAuth, setSelectedPersonAuth] = useState<{username: string} | null>(null);
@@ -165,6 +167,8 @@ export default function AdminDashboard() {
   const [editFormData, setEditFormData] = useState<Partial<Person>>({});
   const [organizationFilter, setOrganizationFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [memberPage, setMemberPage] = useState(1);
+  useEffect(() => setMemberPage(1), [searchQuery, organizationFilter]);
   const [activeEventsTab, setActiveEventsTab] = useState<'birthdays' | 'anniversaries'>('birthdays');
   const [eventsRange, setEventsRange] = useState<7 | 14 | 30>(7);
   const [activityLogs, setActivityLogs] = useState<{ id: string; full_name: string | null; username: string | null; action: string; created_at: string }[]>([]);
@@ -267,9 +271,13 @@ export default function AdminDashboard() {
   }, [isAdmin]);
 
   const fetchPeople = async () => {
-    const { data } = await supabase.from('people').select('*');
-    setPeople((data || []) as Person[]);
-    setLoading(false);
+    setLoading(true); setMembersError(false);
+    try {
+      const { data, error } = await supabase.from('people').select('*');
+      if (error) throw error;
+      setPeople((data || []) as Person[]);
+    } catch { setMembersError(true); }
+    finally { setLoading(false); }
   };
 
   const fetchActivityLogs = async () => {
@@ -883,7 +891,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPeople.map(p => (
+                  {filteredPeople.slice((Math.min(memberPage, Math.max(1, Math.ceil(filteredPeople.length / 25))) - 1) * 25, Math.min(memberPage, Math.max(1, Math.ceil(filteredPeople.length / 25))) * 25).map(p => (
                     <TableRow key={p.uuid} className="hover:bg-muted/30 transition-colors group">
                       {/* Name + avatar */}
                       <TableCell className="pl-6 py-3">
@@ -954,6 +962,8 @@ export default function AdminDashboard() {
                 </TableBody>
               </Table>
             </div>
+            {membersError && <div role="alert">Could not load member records. <Button variant="outline" onClick={() => fetchPeople()}>Try again</Button></div>}
+            <ListPagination page={memberPage} total={filteredPeople.length} pageSize={25} onChange={setMemberPage} />
           </CardContent>
         </Card>
 

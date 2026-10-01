@@ -1,3 +1,5 @@
+import { validateMediaFile, compressPhoto } from '@/lib/mediaFiles';
+import ListPagination from '@/components/ListPagination';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -88,6 +90,7 @@ export default function GalleryPanel({
 
   const [activeTab, setActiveTab] = useState('ALL');
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [galleryError, setGalleryError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
@@ -97,6 +100,11 @@ export default function GalleryPanel({
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [creatingFolder, setCreatingFolder] = useState(false);
+
+  const [gallerySearch, setGallerySearch] = useState('');
+  const [galleryPage, setGalleryPage] = useState(1);
+  const [uploadedCount, setUploadedCount] = useState(0);
+  useEffect(() => { setGalleryPage(1); setLightboxIdx(null); }, [gallerySearch, activeTab, activeFolderId]);
 
   // Upload modal
   const [showUpload, setShowUpload] = useState(false);
@@ -127,12 +135,15 @@ export default function GalleryPanel({
 
   // Whichever flat grid is currently visible — used for both rendering
   // and lightbox prev/next navigation, so they always stay in sync.
-  const filtered = activeTab === 'ALL'
+  const folderMedia = activeTab === 'ALL'
     ? media
     : activeFolderId
       ? orgMedia.filter(m => m.folder_id === activeFolderId)
       : orgMedia.filter(m => !m.folder_id);
 
+  const filtered = folderMedia.filter(item => `${item.title || ''} ${item.description || ''} ${item.uploaded_by || ''}`.toLowerCase().includes(gallerySearch.toLowerCase()));
+  const pageStart = (Math.min(galleryPage, Math.max(1, Math.ceil(filtered.length / 24))) - 1) * 24;
+  const visibleMedia = filtered.slice(pageStart, pageStart + 24);
   const lightboxItem = lightboxIdx !== null ? filtered[lightboxIdx] : null;
 
   // Can the logged-in person manage folders/uploads for a given org?
@@ -195,13 +206,13 @@ export default function GalleryPanel({
 
   const fetchMedia = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('media_gallery')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error) setMedia((data || []) as MediaItem[]);
-    setLoading(false);
+    setGalleryError(false);
+    try {
+      const { data, error } = await supabase.from('media_gallery').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setMedia((data || []) as MediaItem[]);
+    } catch { setGalleryError(true); }
+    finally { setLoading(false); }
   };
 
   const fetchFolders = async () => {
@@ -210,6 +221,7 @@ export default function GalleryPanel({
       .select('*')
       .order('created_at', { ascending: false });
     if (!error) setFolders((data || []) as GalleryFolder[]);
+    else toast({ title: 'Folders could not load', description: 'Refresh the page to try again.', variant: 'destructive' });
   };
 
   // ── CREATE FOLDER ──────────────────────────────────────────────────────────
@@ -238,11 +250,15 @@ export default function GalleryPanel({
   // ── FILE CHANGE (BATCH) ───────────────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    if (!files.length || uploading) return;
+    const problem = files.length > 20 ? 'Choose up to 20 files at a time.' : files.map(file => validateMediaFile(file, true)).find(Boolean);
+    if (problem) { toast({ title: 'Files not accepted', description: problem, variant: 'destructive' }); e.target.value = ''; return; }
 
     setUploadFiles(files);
     setUploadPreviews(files.map(file => URL.createObjectURL(file)));
   };
+
+  useEffect(() => () => uploadPreviews.forEach(url => URL.revokeObjectURL(url)), [uploadPreviews]);
 
   const resetUploadForm = () => {
     setUploadOrg('');
@@ -264,6 +280,7 @@ export default function GalleryPanel({
 
   // ── UPLOAD (BATCH SUPABASE) ───────────────────────────────────────────────
   const handleUpload = async () => {
+    if (uploading) return;
     const org = uploadContext?.organization || uploadOrg;
     const folderId = uploadContext?.folderId ?? null;
 
@@ -295,10 +312,15 @@ export default function GalleryPanel({
     }
 
     setUploading(true);
+    setUploadedCount(0);
+    const uploadedPaths: string[] = [];
 
     try {
-      const uploads = await Promise.all(
-        uploadFiles.map(async (file) => {
+      const uploads = [];
+      for (const original of uploadFiles) {
+          const problem = validateMediaFile(original, true);
+          if (problem) throw new Error(problem);
+          const file = await compressPhoto(original);
           const ext = file.name.split('.').pop();
           const path = `${org}/${Date.now()}-${Math.random()
             .toString(36)
@@ -311,12 +333,14 @@ export default function GalleryPanel({
             });
 
           if (storageErr) throw storageErr;
+          uploadedPaths.push(path);
+          setUploadedCount(uploadedPaths.length);
 
           const { data: urlData } = supabase.storage
             .from('media-gallery')
             .getPublicUrl(path);
 
-          return {
+          uploads.push({
             organization: org,
             file_url: urlData.publicUrl,
             file_type: file.type.startsWith('video') ? 'video' : 'image',
@@ -324,9 +348,8 @@ export default function GalleryPanel({
             description: uploadDescription.trim() || null,
             uploaded_by: uploadBy.trim(),
             folder_id: folderId,
-          };
-        })
-      );
+          });
+      }
 
       const { error: dbErr } = await supabase
         .from('media_gallery')
@@ -343,6 +366,10 @@ export default function GalleryPanel({
       resetUploadForm();
       fetchMedia();
     } catch (err) {
+      if (uploadedPaths.length) {
+        const { error: cleanupError } = await supabase.storage.from('media-gallery').remove(uploadedPaths);
+        if (cleanupError) toast({ title: 'File cleanup needed', description: 'Some uploaded files could not be removed. Ask an administrator to check storage.', variant: 'destructive' });
+      }
       toast({
         title: 'Upload failed',
         description: (err as Error).message,
@@ -595,7 +622,7 @@ export default function GalleryPanel({
               {uploadPreviews.length > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
                   {uploadPreviews.map((src, i) => (
-                    <img key={i} src={src} className="h-20 w-full object-cover rounded" />
+                    uploadFiles[i]?.type.startsWith('video/') ? <video key={src} src={src} muted preload="metadata" className="h-20 w-full object-cover rounded" /> : <img key={src} src={src} alt={uploadFiles[i]?.name || 'Selected photo'} className="h-20 w-full object-cover rounded" />
                   ))}
                 </div>
               ) : (
@@ -611,12 +638,14 @@ export default function GalleryPanel({
               accept="image/*,video/*"
               multiple
               className="hidden"
+              disabled={uploading}
               onChange={handleFileChange}
             />
           </div>
 
+          {uploading && <div role="status"><p>{uploadedCount} of {uploadFiles.length} files uploaded. Saving the gallery entry follows.</p><progress value={uploadedCount} max={uploadFiles.length} className="w-full" /></div>}
           <div className="flex justify-end gap-2 pt-3">
-            <Button variant="outline" onClick={() => setShowUpload(false)}>
+            <Button variant="outline" disabled={uploading} onClick={() => setShowUpload(false)}>
               Cancel
             </Button>
             <Button
@@ -634,7 +663,9 @@ export default function GalleryPanel({
       </Dialog>
 
       {/* ── Media Grid ── */}
-      {loading ? (
+      <Input aria-label="Search gallery" placeholder="Search captions or uploader names…" value={gallerySearch} onChange={e => setGallerySearch(e.target.value)} />
+      <ListPagination page={galleryPage} total={filtered.length} pageSize={24} onChange={setGalleryPage} />
+      {galleryError ? <div role="alert">Could not load gallery media. <Button variant="outline" onClick={() => fetchMedia()}>Try again</Button></div> : loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
@@ -647,7 +678,7 @@ export default function GalleryPanel({
         ) : null
       ) : (
         <div className="gsc-gallery-grid">
-          {filtered.map((item, idx) => {
+          {visibleMedia.map((item, idx) => {
             const tab = TAB_MAP[item.organization];
             const draggable = canManageOrg(item.organization) && !activeFolderId;
             return (
@@ -659,7 +690,7 @@ export default function GalleryPanel({
                 className={`group relative aspect-square overflow-hidden border-border p-0
                   ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
               >
-                <button type="button" className="gsc-gallery-preview" aria-label={`Open ${item.title || (item.file_type === 'video' ? 'video' : 'photo')}`} onClick={() => setLightboxIdx(idx)}>
+                <button type="button" className="gsc-gallery-preview" aria-label={`Open ${item.title || (item.file_type === 'video' ? 'video' : 'photo')}`} onClick={() => setLightboxIdx(pageStart + idx)}>
                 {item.file_type === 'video' ? (
                   <VideoThumb url={item.file_url} />
                 ) : (

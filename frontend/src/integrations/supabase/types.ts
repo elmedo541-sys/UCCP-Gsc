@@ -650,6 +650,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_reset_member_password: {
+        Args: { p_person_id: string; p_admin_token: string; p_new_password: string }
+        Returns: boolean
+      }
+      get_prayer_requests: {
+        Args: { p_admin_token: string }
+        Returns: { id: string; person_id: string | null; requester_name: string; request: string; is_answered: boolean; is_public: boolean; created_at: string }[]
+      }
+      update_prayer_request_answered: {
+        Args: { p_request_id: string; p_admin_token: string; p_is_answered: boolean }
+        Returns: boolean
+      }
       admin_delete_member: {
         Args: { p_admin_token: string; p_member_uuid: string }
         Returns: boolean

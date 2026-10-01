@@ -1,3 +1,4 @@
+import { validateMediaFile, compressPhoto } from "@/lib/mediaFiles";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -444,6 +445,12 @@ export default function Feed() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
+  const [feedError, setFeedError] = useState(false);
+  const [feedSearch, setFeedSearch] = useState('');
+  const [hasMorePosts, setHasMorePosts] = useState(false);
+  const [preparingImage, setPreparingImage] = useState(false);
+  const postOffset = useRef(0);
+  const feedRequest = useRef(0);
   const [dbSetupNeeded, setDbSetupNeeded] = useState(false);
   const [autoSetupRunning, setAutoSetupRunning] = useState(false);
   const [autoSetupError, setAutoSetupError] = useState('');
@@ -523,19 +530,28 @@ export default function Feed() {
   }, [personId]);
 
   /* ── Fetch posts ── */
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (append = false) => {
+    const request = ++feedRequest.current;
+    const offset = append ? postOffset.current : 0;
+    setFeedError(false);
+    if (!append) setPosts([]);
+    try {
     setLoadingPosts(true);
     const { data: rows, error } = await supabase
       .from('feed_posts')
       .select('*')
+      .ilike('content', `%${feedSearch.trim().replace(/[\\%_]/g, '\\$&')}%`)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .order('id', { ascending: false })
+      .range(offset, offset + 19);
+    if (request !== feedRequest.current) return;
 
     if (error) {
       // Detect missing table (PGRST205 = table not in schema cache)
       if (error.code === 'PGRST205' || error.message?.includes('feed_posts')) {
         setDbSetupNeeded(true);
       }
+      setFeedError(true);
       setLoadingPosts(false);
       return;
     }
@@ -545,22 +561,25 @@ export default function Feed() {
 
     const personIds = [...new Set(rows.map((r: PostRow) => r.person_id))];
 
-    const [{ data: people }, { data: likes }] = await Promise.all([
+    const [{ data: people, error: peopleError }, { data: likes, error: likesError }] = await Promise.all([
       supabase.from('people').select('uuid, full_name, profile_picture').in('uuid', personIds),
       supabase.from('feed_likes').select('post_id, person_id').in('post_id', rows.map((r: PostRow) => r.id)),
     ]);
 
+    if (peopleError || likesError) throw peopleError || likesError;
     // Comment counts
-    const { data: commentCounts } = await supabase
+    const { data: commentCounts, error: commentError } = await supabase
       .from('feed_comments')
       .select('post_id')
       .in('post_id', rows.map((r: PostRow) => r.id));
 
+    if (commentError) throw commentError;
     const peopleMap = Object.fromEntries((people || []).map(p => [p.uuid, p]));
     const likesArr = likes || [];
     const commentsArr = commentCounts || [];
 
-    setPosts(rows.map((r: PostRow) => {
+    if (request !== feedRequest.current) return;
+    const nextPosts = rows.map((r: PostRow) => {
       const postLikes = likesArr.filter((l: { post_id: string; person_id: string }) => l.post_id === r.id);
       const postComments = commentsArr.filter((c: { post_id: string }) => c.post_id === r.id);
       return {
@@ -571,10 +590,13 @@ export default function Feed() {
         comment_count: postComments.length,
         user_liked: postLikes.some((l: { post_id: string; person_id: string }) => l.person_id === personId),
       };
-    }));
-
-    setLoadingPosts(false);
-  }, [personId]);
+    });
+    setPosts(prev => append ? [...prev, ...nextPosts.filter(row => !prev.some(old => old.id === row.id))] : nextPosts);
+    postOffset.current = offset + rows.length;
+    setHasMorePosts(rows.length === 20);
+    } catch { if (request === feedRequest.current) setFeedError(true); }
+    finally { if (request === feedRequest.current) setLoadingPosts(false); }
+  }, [personId, feedSearch]);
 
   useEffect(() => {
     if (!authLoading) fetchPosts();
@@ -607,12 +629,18 @@ export default function Feed() {
   }, [dbSetupNeeded]);
 
   /* ── Image select ── */
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    const problem = validateMediaFile(file);
+    if (problem) { toast({ title: 'Photo not accepted', description: problem, variant: 'destructive' }); e.target.value = ''; return; }
+    setPreparingImage(true);
+    try { const photo = await compressPhoto(file); setImageFile(photo); setImagePreview(URL.createObjectURL(photo)); }
+    catch { toast({ title: 'Could not read photo', description: 'Choose another image.', variant: 'destructive' }); }
+    finally { setPreparingImage(false); }
   };
+
+  useEffect(() => () => { if (imagePreview) URL.revokeObjectURL(imagePreview); }, [imagePreview]);
 
   const removeImage = () => {
     setImageFile(null);
@@ -622,43 +650,29 @@ export default function Feed() {
 
   /* ── Create post ── */
   const handlePost = async () => {
-    if (!content.trim() || !personId) return;
+    if (!content.trim() || !personId || posting || preparingImage) return;
     setPosting(true);
 
-    let imageUrl: string | null = null;
-
-    if (imageFile) {
-      const ext = imageFile.name.split('.').pop();
-      const path = `${personId}/${Date.now()}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('feed-images')
-        .upload(path, imageFile, { upsert: true });
-
-      if (!uploadErr) {
-        const { data: urlData } = supabase.storage.from('feed-images').getPublicUrl(path);
-        imageUrl = urlData.publicUrl;
+    let uploadedPath: string | null = null;
+    try {
+      let imageUrl: string | null = null;
+      if (imageFile) {
+        const path = `${personId}/${crypto.randomUUID()}.${imageFile.name.split('.').pop()}`;
+        const { error } = await supabase.storage.from('feed-images').upload(path, imageFile);
+        if (error) throw error;
+        uploadedPath = path;
+        imageUrl = supabase.storage.from('feed-images').getPublicUrl(path).data.publicUrl;
       }
-    }
-
-    const { error } = await supabase.from('feed_posts').insert({
-      person_id: personId,
-      content: content.trim(),
-      image_url: imageUrl,
-      is_birthday_post: false,
-    });
-
-    if (error) {
-      if (error.code === 'PGRST205' || error.message?.includes('feed_posts')) {
-        setDbSetupNeeded(true);
-      } else {
-        toast({ title: 'Error', description: 'Failed to create post.', variant: 'destructive' });
+      const { error } = await supabase.from('feed_posts').insert({ person_id: personId, content: content.trim(), image_url: imageUrl, is_birthday_post: false });
+      if (error) throw error;
+      setContent(''); removeImage(); fetchPosts();
+    } catch {
+      if (uploadedPath) {
+        const { error } = await supabase.storage.from('feed-images').remove([uploadedPath]);
+        if (error) toast({ title: 'File cleanup needed', description: 'Ask an administrator to check the unused photo in storage.', variant: 'destructive' });
       }
-    } else {
-      setContent('');
-      removeImage();
-      fetchPosts();
-    }
-    setPosting(false);
+      toast({ title: 'Post not published', description: 'Your draft is still here. Please try again.', variant: 'destructive' });
+    } finally { setPosting(false); }
   };
 
   /* ── Like toggle ── */
@@ -925,12 +939,12 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                 />
                 <Button
                   onClick={handlePost}
-                  disabled={!content.trim() || posting}
+                  disabled={!content.trim() || posting || preparingImage}
                   size="sm"
                   className="rounded-full px-5 shadow-sm active:scale-95 transition-transform"
                 >
                   {posting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <Send className="w-4 h-4 mr-1.5" />}
-                  Post
+                  {preparingImage ? 'Preparing photo…' : posting ? 'Publishing…' : 'Post'}
                 </Button>
               </div>
             </div>
@@ -948,13 +962,15 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
           </div>
         )}
 
+        <div className="gsc-feed-search"><label htmlFor="gsc-feed-search">Find a post</label><input id="gsc-feed-search" type="search" value={feedSearch} placeholder="Search post text…" onChange={event => setFeedSearch(event.target.value)} /></div>
+        {feedError && <div role="alert" className="gsc-load-error">Could not load the feed. <button onClick={() => fetchPosts()}>Try again</button></div>}
         {/* Posts list */}
-        {loadingPosts ? (
+        {loadingPosts && posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Loading feed…</p>
           </div>
-        ) : posts.length === 0 ? (
+        ) : posts.length === 0 && !feedError ? (
           <div className="animate-feed-fade-in flex flex-col items-center justify-center py-20 gap-3 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
               <MessageCircle className="w-8 h-8 text-muted-foreground/50" />
@@ -979,6 +995,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
             />
           ))}</div>
         )}
+        {hasMorePosts && !feedError && <Button variant="outline" disabled={loadingPosts} onClick={() => fetchPosts(true)}>{loadingPosts ? 'Loading…' : 'Load more posts'}</Button>}
       </div>
 
       <ChatSupportWidget />

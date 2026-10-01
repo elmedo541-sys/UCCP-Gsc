@@ -51,6 +51,7 @@ export default function AdminPrayerRequests() {
   const { toast } = useToast();
 
   const [requests, setRequests] = useState<PrayerRequestRow[]>([]);
+  const [loadError, setLoadError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -58,13 +59,14 @@ export default function AdminPrayerRequests() {
 
   const fetchRequests = useCallback(async () => {
     const token = getToken();
-    if (!token) return;
-    setLoading(true);
+    if (!token) { setLoadError(true); setLoading(false); return; }
+    setLoading(true); setLoadError(false);
     try {
       const { data, error } = await supabase.rpc('get_prayer_requests', { p_admin_token: token });
       if (error) throw error;
       setRequests((data || []) as PrayerRequestRow[]);
     } catch (error) {
+      setLoadError(true);
       toast({
         title: 'Failed to load prayer requests',
         description: error instanceof Error ? error.message : 'Please try again.',
@@ -155,7 +157,7 @@ export default function AdminPrayerRequests() {
 
       {/* Content */}
       <main className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6">
-        {loading ? (
+        {loadError && !loading ? <div role="alert">Could not load prayer requests. <Button variant="outline" onClick={() => fetchRequests()}>Try again</Button></div> : loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
