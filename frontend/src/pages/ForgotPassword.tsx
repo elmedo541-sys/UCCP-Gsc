@@ -184,8 +184,8 @@ export default function ForgotPassword() {
     if (newPassword !== confirmPassword) {
       toast({ title: 'Mismatch', description: 'Passwords do not match.', variant: 'destructive' }); return;
     }
-    if (newPassword.length < 6) {
-      toast({ title: 'Too Short', description: 'Password must be at least 6 characters.', variant: 'destructive' }); return;
+    if (newPassword.length < 8 || new TextEncoder().encode(newPassword).length > 72) {
+      toast({ title: 'Too Short', description: 'Use at least 8 characters and at most 72 bytes.', variant: 'destructive' }); return;
     }
     setLoading(true);
     try {

@@ -17,6 +17,17 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    if (type === 'password_reset') {
+      const { data: result, error } = await supabase.rpc('reset_member_password_with_code', {
+        p_email: email, p_code: code, p_new_password: newPassword,
+      });
+      const status = error ? 500 : result === 'success' ? 200 : result === 'too_many_attempts' ? 429 : 400;
+      return new Response(JSON.stringify(result === 'success' && !error
+        ? { success: true, message: 'Password updated successfully' }
+        : { error: error ? 'Could not reset password. Please try again.' : 'Invalid code or password. Request a new code if necessary.' }),
+        { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     // Look up the active code for this email/type regardless of the
     // submitted value, so wrong guesses can be counted and capped —
     // without this, a 6-digit code (1 in a million) is brute-forceable
@@ -101,38 +112,6 @@ Deno.serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
-    } else if (type === 'password_reset' && newPassword) {
-      // Get username for this email
-      const { data: userData } = await supabase
-        .from('user_auth')
-        .select('username, person_id')
-        .eq('email', email)
-        .single();
-
-      if (!userData) {
-        return new Response(
-          JSON.stringify({ error: 'User not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Update password using the database function
-      const { error: updateError } = await supabase.rpc('update_user_password', {
-        p_email: email,
-        p_password: newPassword
-      });
-
-      if (updateError) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to update password' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ success: true, message: 'Password updated successfully' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     return new Response(

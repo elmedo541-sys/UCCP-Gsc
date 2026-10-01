@@ -818,35 +818,20 @@ export default function UserProfile() {
                             toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' });
                             return;
                           }
-                          if (newPassword.length < 6) {
-                            toast({ title: 'Error', description: 'Password must be at least 6 characters', variant: 'destructive' });
+                          if (newPassword.length < 8 || new TextEncoder().encode(newPassword).length > 72) {
+                            toast({ title: 'Error', description: 'Use at least 8 characters and at most 72 bytes', variant: 'destructive' });
                             return;
                           }
                           setPasswordChanging(true);
                           try {
-                            // Verify current password by attempting login
-                            const { data: authData } = await supabase
-                              .from('user_auth')
-                              .select('username')
-                              .eq('person_id', personId)
-                              .single();
-                            
-                            if (!authData?.username) throw new Error('User not found');
-                            
-                            const { data: verifyData, error: verifyError } = await supabase.rpc('verify_user_credentials', {
-                              p_username: authData.username,
-                              p_password: currentPassword,
+                            const session = JSON.parse(localStorage.getItem('user_session') || 'null');
+                            if (!session?.token) throw new Error('Sign in again to change your password');
+                            const { data: changed, error: updateError } = await supabase.rpc('change_member_password', {
+                              p_token: session.token,
+                              p_current_password: currentPassword,
+                              p_new_password: newPassword,
                             });
-                            
-                            if (verifyError || !verifyData) throw new Error('Current password is incorrect');
-                            
-                            // Update password
-                            const { error: updateError } = await supabase.rpc('update_user_password', {
-                              p_email: formData.email,
-                              p_password: newPassword,
-                            });
-                            
-                            if (updateError) throw updateError;
+                            if (updateError || !changed) throw updateError || new Error('Password was not changed');
                             
                             toast({ title: 'Success', description: 'Password updated successfully' });
                             setShowPasswordChange(false);

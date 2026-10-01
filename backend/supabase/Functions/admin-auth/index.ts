@@ -306,41 +306,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'signup') {
-      const { data: existingAdmins, error: checkError } = await supabase
-        .from('admin_credentials')
-        .select('id')
-        .limit(1);
-
-      if (checkError) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to check admin status' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      if (existingAdmins && existingAdmins.length > 0) {
-        return new Response(
-          JSON.stringify({ error: 'Admin account already exists. Only one admin is allowed.' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const { error } = await supabase.rpc('create_admin_user', {
-        p_username: username,
-        p_password: password,
-      });
-
-      if (error) {
-        return new Response(
-          JSON.stringify({ error: error.message || 'Failed to create admin user' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ success: true, message: 'Admin user created successfully' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Public administrator signup is disabled. Ask a super administrator.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     } else {
       // Login
       const { data, error } = await supabase.rpc('verify_admin_credentials', {

@@ -135,3 +135,7 @@ Whenever a new module (such as a component, hook, or utility) or a new page is a
 ## Authentication page design
 
 `frontend/src/components/AuthBrand.tsx` shares the church identity panel across member login, admin login and registration. Scoped `.gsc-auth-refresh` styles in `frontend/src/pages/AuthPages.css` provide responsive layouts and entrance/hover/step animations, respecting prefers-reduced-motion. Authentication handlers are unchanged.
+
+## Community home and account operations
+
+`Home.tsx` uses actual homepage images/events for a logged-in welcome section and church photo strip. `useSectionReveal.ts` observes marked sections and honors reduced-motion preferences. Account operation deployment is coordinated across SQL, Edge Functions and frontend; follow `docs/AUTH_DEPLOYMENT.md`. Git push alone does not install SQL or deploy Edge Functions.

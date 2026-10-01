@@ -54,3 +54,11 @@
 @media(min-width:1300px){.gsc-events-grid,.gsc-prayers-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.gsc-page-layout .gsc-managed-page h1{font-size:23px}.gsc-page-layout .gsc-managed-page h2{font-size:28px}.gsc-page-banner>.container{grid-template-columns:minmax(0,1fr);gap:12px}.gsc-page-banner>.container>svg{display:none}.gsc-page-banner>.container>p{grid-column:1;font-size:16px}.gsc-events-grid .gsc-event-detail-card,.gsc-prayers-grid .gsc-prayer-card{padding:20px}.gsc-directory-grid,.gsc-gallery-grid{grid-template-columns:minmax(0,1fr);gap:18px}.gsc-profile-form>.border{padding:18px}.gsc-page-filters{padding:16px}.gsc-managed-page :is(th,td){padding:12px}.gsc-gallery-panel>div:first-child{padding:14px}.gsc-user-profile-page>div>div.flex.items-center.justify-between{flex-wrap:wrap;gap:16px}}
 @media(prefers-reduced-motion:reduce){.gsc-managed-page *,.gsc-gallery-panel *{animation:none!important;transition:none!important}}
+
+/* Gallery motion follows the same restrained timing as the homepage. */
+.gsc-gallery-grid>div{overflow:hidden;transition:transform .22s ease,box-shadow .22s ease}
+.gsc-gallery-grid>div:hover{box-shadow:0 10px 28px #10263716;transform:translateY(-3px)}
+.gsc-gallery-grid img{transition:transform .35s ease}.gsc-gallery-grid>div:hover img{transform:scale(1.025)}
+.gsc-member-navigation .gsc-member-link{min-height:46px;transition:background-color .18s,color .18s}
+.gsc-member-navigation .gsc-member-link:focus-visible{outline:3px solid #b89752;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.gsc-gallery-grid>div,.gsc-gallery-grid img,.gsc-member-navigation .gsc-member-link{transition:none!important}.gsc-gallery-grid>div:hover,.gsc-gallery-grid>div:hover img{transform:none}}

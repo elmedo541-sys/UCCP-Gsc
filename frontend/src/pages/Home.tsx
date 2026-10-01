@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import useSectionReveal from '@/hooks/useSectionReveal';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,8 @@ interface Event {
 
 export default function Home() {
   const navigate = useNavigate();
+  const homeRef = useRef<HTMLDivElement>(null);
+  useSectionReveal(homeRef);
   const { isLoggedIn, personId } = useUserAuth();
   const [images, setImages] = useState<HomepageImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -125,7 +128,7 @@ export default function Home() {
   };
 
   return (
-    <div className="gsc-home">
+    <div className="gsc-home gsc-home-refresh" ref={homeRef}>
       <a className="gsc-skip" href="#main-content">Skip to content</a>
       <header className="gsc-header">
         <div className="gsc-wrap gsc-header-inner">
@@ -148,8 +151,14 @@ export default function Home() {
       </header>
       {showUpdateAnim && <div className="gsc-update" role="status">Updating the website…</div>}
       <main id="main-content">
+        {isLoggedIn && <section className="gsc-member-welcome gsc-wrap" aria-label="Your member dashboard" data-reveal>
+          <div><p className="gsc-eyebrow">YOUR MEMBER SPACE</p><h2>Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}.</h2><p>Catch up with your church family and plan your next visit.</p></div>
+          <div className="gsc-welcome-actions"><Button variant="outline" onClick={() => navigate('/user/profile')}>My profile</Button><Button className="gsc-primary" onClick={() => navigate('/feed')}>Community feed <ArrowRight className="ml-2 h-4 w-4" /></Button></div>
+          <div className="gsc-next-activity"><Calendar aria-hidden="true" /><div><small>NEXT CHURCH ACTIVITY</small><strong>{upcomingEvents[0]?.title || 'New activities will appear here'}</strong>{upcomingEvents[0] && <p>{new Date(upcomingEvents[0].event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}{upcomingEvents[0].location ? ` · ${upcomingEvents[0].location}` : ''}</p>}</div><button className="gsc-text-link" onClick={() => navigate('/events')}>View events <ArrowRight className="h-4 w-4" /></button></div>
+        </section>}
+
         <section className="gsc-hero" aria-label="Welcome to Good Samaritan Church">
-          {currentImage && !imageFailed && <img className="gsc-hero-photo" src={currentImage.image_url} alt={currentImage.title || 'Good Samaritan Church community'} onError={() => setImageFailed(true)} fetchPriority="high" />}
+          {currentImage && !imageFailed && <img key={currentImage.id} className="gsc-hero-photo" src={currentImage.image_url} alt={currentImage.title || 'Good Samaritan Church community'} onError={() => setImageFailed(true)} fetchPriority="high" />}
           <div className="gsc-hero-shade" />
           <div className="gsc-wrap gsc-hero-content">
             <p className="gsc-eyebrow">FAITH · FELLOWSHIP · SERVICE</p>
@@ -169,11 +178,11 @@ export default function Home() {
             </div>
           </div>}
         </section>
-        <section className="gsc-intro gsc-wrap" id="church-life">
+        <section data-reveal className="gsc-intro gsc-wrap" id="church-life">
           <div><p className="gsc-eyebrow">OUR CHURCH COMMUNITY</p><h2>Connected through faith.<br />Present for one another.</h2></div>
           <div><p>Find church updates, share moments from our activities, and keep in touch with fellow members—all in one place.</p><button className="gsc-text-link" onClick={() => navigate('/presentation')}>New here? Learn how to use the website <ArrowRight className="h-4 w-4" /></button></div>
         </section>
-        <section className="gsc-events-section" id="upcoming-events">
+        <section data-reveal className="gsc-events-section" id="upcoming-events">
           <div className="gsc-wrap">
             <div className="gsc-section-heading"><div><p className="gsc-eyebrow">WHAT’S COMING UP</p><h2>Events & announcements</h2></div><button className="gsc-text-link" onClick={() => openMemberPage('/events', 'Events')}>View all events <ArrowRight className="h-4 w-4" /></button></div>
             {upcomingEvents.length > 0 ? <div className="gsc-event-grid">{upcomingEvents.map(event => {
@@ -185,7 +194,8 @@ export default function Home() {
             })}</div> : <div className="gsc-empty"><Calendar /><div><h3>Watch this space for upcoming activities.</h3><p>Church events and announcements will appear here when posted.</p></div></div>}
           </div>
         </section>
-        <section className="gsc-wrap gsc-member-section">
+        {images.length > 0 && <section className="gsc-wrap gsc-community-photos" data-reveal aria-label="Church community photos"><div className="gsc-section-heading"><div><p className="gsc-eyebrow">LIFE TOGETHER</p><h2>Moments from our church.</h2></div><button className="gsc-text-link" onClick={() => openMemberPage('/gallery', 'Gallery')}>Explore the gallery <ArrowRight className="h-4 w-4" /></button></div><div className="gsc-photo-strip">{images.slice(0, 3).map(photo => <button key={photo.id} onClick={() => openMemberPage('/gallery', 'Gallery')} aria-label={`Explore gallery: ${photo.title || 'Church community'}`}><img src={photo.image_url} alt={photo.title || 'Church community'} loading="lazy" /><span>{photo.title || 'Our church community'}<ArrowRight aria-hidden="true" /></span></button>)}</div></section>}
+        <section data-reveal className="gsc-wrap gsc-member-section">
           <div className="gsc-section-heading"><div><p className="gsc-eyebrow">FOR OUR MEMBERS</p><h2>Your church, within reach.</h2></div>{!isLoggedIn && <p className="gsc-member-note"><Lock className="h-4 w-4" />Log in to access member features</p>}</div>
           <div className="gsc-member-grid">{[
             { label: 'Community feed', icon: MessageSquare, path: '/feed', desc: 'Read updates and share with fellow members.' },

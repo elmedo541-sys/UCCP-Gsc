@@ -650,6 +650,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      change_member_password: { Args: { p_token: string; p_current_password: string; p_new_password: string }; Returns: boolean };
       admin_reset_member_password: {
         Args: { p_person_id: string; p_admin_token: string; p_new_password: string }
         Returns: boolean

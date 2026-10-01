@@ -19,7 +19,10 @@ Deno.serve(async (req) => {
     }
 
     // Generate 6-digit verification code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Rejection sampling avoids modulo bias and uses cryptographic randomness.
+    const random = new Uint32Array(1);
+    do { crypto.getRandomValues(random); } while (random[0] >= 4294000000);
+    const code = String(random[0] % 1000000).padStart(6, '0');
 
     // Store in database (expires in 10 minutes)
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.39.3');
