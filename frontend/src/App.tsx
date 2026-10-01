@@ -26,7 +26,9 @@ const App = () => {
           <Toaster />
           <Sonner />
           {!isAdminRoute && <ThemeToggle />}
-          <RouterProvider router={router} />
+          <div className="gsc-page-layout">
+            <RouterProvider router={router} />
+          </div>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

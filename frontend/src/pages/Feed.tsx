@@ -744,7 +744,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
 
     return (
       <div className="min-h-screen bg-background flex items-start justify-center p-4 pt-10">
-        <div className="max-w-2xl w-full space-y-4">
+        <div className="gsc-wide w-full space-y-4">
           {/* Header */}
           <div className="flex items-center gap-3 mb-2">
             <button onClick={() => navigate('/')} className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
@@ -972,7 +972,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
             </p>
           </div>
         ) : (
-          posts.map((post, i) => (
+          <div className="gsc-feed-posts">{posts.map((post, i) => (
             <PostCard
               key={post.id}
               post={post}
@@ -984,7 +984,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
               canDownload={isLoggedIn || isAdmin}
               onImageClick={setLightboxImage}
             />
-          ))
+          ))}</div>
         )}
       </div>
 

@@ -294,3 +294,76 @@ body,
   animation: hero-underline-in 0.7s ease-out both;
   animation-delay: 0.9s;
 }
+
+/* Full-width route layouts. Dialogs render outside this wrapper via portals. */
+#root {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+.gsc-page-layout { width: 100%; min-height: 100vh; min-width: 0; }
+.gsc-page-layout .container,
+.gsc-page-layout .gsc-wide,
+.gsc-page-layout :is(div, main, section)[class*="max-w-"][class~="mx-auto"],
+.gsc-page-layout .w-full.relative.z-10[class*="max-w-"] {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+.gsc-page-layout .container {
+  padding-inline: clamp(16px, 2.5vw, 48px);
+}
+.gsc-page-layout .gsc-home .gsc-wrap {
+  width: calc(100% - clamp(36px, 5vw, 96px));
+  max-width: none;
+}
+.gsc-page-layout .gsc-auth .gsc-auth-brand {
+  max-width: none;
+}
+.gsc-page-layout .gsc-feed-posts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.gsc-page-layout .gsc-feed-posts > * { min-width: 0; margin-top: 0; }
+@media (min-width: 1024px) {
+  /* Member forms use the page: church identity left, form right. */
+  .gsc-page-layout .gsc-auth {
+    display: grid;
+    grid-template-columns: minmax(240px, .8fr) minmax(0, 2fr);
+    align-items: start;
+    gap: clamp(32px, 4vw, 72px);
+    padding: clamp(32px, 4vw, 64px);
+  }
+  .gsc-page-layout .gsc-auth .gsc-auth-brand {
+    position: sticky;
+    top: 56px;
+    margin: 0;
+    padding: 32px 0;
+    text-align: left;
+    border-bottom: none;
+    border-top: 3px solid var(--auth-gold);
+  }
+  .gsc-page-layout .gsc-auth-brand a {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .gsc-page-layout .gsc-auth-brand img { width: 80px; height: 80px; }
+  .gsc-page-layout .gsc-auth-brand strong {
+    font: 400 32px/1.25 Georgia, 'Times New Roman', serif;
+    margin-top: 12px;
+  }
+  .gsc-page-layout .gsc-auth-brand p { font-size: 15px; line-height: 1.8; }
+  .gsc-page-layout .gsc-feed-posts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1800px) {
+  .gsc-page-layout .gsc-feed-posts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .gsc-page-layout .gsc-home .gsc-wrap { width: calc(100% - 32px); }
+  .gsc-page-layout .gsc-auth { padding-inline: 16px; }
+}
