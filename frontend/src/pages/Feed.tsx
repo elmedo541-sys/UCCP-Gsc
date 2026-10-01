@@ -246,7 +246,7 @@ function CommentSection({ postId, personId, canModerate = false }: { postId: str
   };
 
   return (
-    <div className="border-t border-border pt-3 mt-3 space-y-3">
+    <div className="gsc-comments border-t border-border pt-3 mt-3 space-y-3">
       {loading ? (
         <div className="flex justify-center py-2"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
       ) : (
@@ -254,16 +254,17 @@ function CommentSection({ postId, personId, canModerate = false }: { postId: str
           {comments.map((c, i) => (
             <div key={c.id} className="flex gap-2 animate-feed-comment-item group" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
               <Avatar picture={c.author_picture} name={c.author_name} size="sm" />
-              <div className="flex-1 bg-muted rounded-2xl px-3 py-2 relative">
+              <div className="gsc-comment-bubble flex-1 bg-muted rounded-2xl px-3 py-2 relative">
                 <p className="text-xs font-semibold text-foreground">{c.author_name}</p>
-                <p className="text-sm text-foreground/90 mt-0.5 pr-5">{c.content}</p>
+                <p className="text-sm text-foreground/90 mt-0.5 pr-8 whitespace-pre-wrap break-words">{c.content}</p>
                 <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(c.created_at)}</p>
                 {(personId === c.person_id || canModerate) && (
                   <button
                     onClick={() => handleDeleteComment(c.id)}
                     disabled={deletingId === c.id}
+                    aria-label={personId === c.person_id ? 'Delete comment' : 'Delete comment (admin)'}
                     title={personId === c.person_id ? 'Delete comment' : 'Delete comment (admin)'}
-                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                    className="gsc-comment-delete absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
                   >
                     {deletingId === c.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                   </button>
@@ -280,6 +281,7 @@ function CommentSection({ postId, personId, canModerate = false }: { postId: str
       {personId && (
         <div className="flex gap-2 items-end">
           <Textarea
+            aria-label="Write a comment"
             placeholder="Write a comment…"
             value={text}
             onChange={e => setText(e.target.value)}
@@ -291,6 +293,7 @@ function CommentSection({ postId, personId, canModerate = false }: { postId: str
           <Button
             size="sm"
             onClick={handleSubmit}
+            aria-label="Send comment"
             disabled={!text.trim() || submitting}
             className="rounded-full h-9 w-9 p-0 flex-shrink-0"
           >
@@ -333,7 +336,8 @@ function PostCard({
 
   return (
     <div
-      className={`animate-feed-post bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${post.is_birthday_post ? 'border-yellow-300 dark:border-yellow-700' : ''}`}
+      role="article" aria-label={`Post by ${post.author_name}`}
+      className={`gsc-post-card animate-feed-post bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${post.is_birthday_post ? 'border-yellow-300 dark:border-yellow-700' : ''}`}
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
     >
       {post.is_birthday_post && (
@@ -343,7 +347,7 @@ function PostCard({
         </div>
       )}
 
-      <div className="p-4">
+      <div className="gsc-post-body p-4">
         {/* Author row */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2.5">
@@ -356,6 +360,7 @@ function PostCard({
           {(personId === post.person_id || canModerate) && (
             <button
               onClick={() => onDelete(post.id)}
+              aria-label={personId === post.person_id ? 'Delete post' : 'Delete post (admin)'}
               title={personId === post.person_id ? 'Delete post' : 'Delete post (admin)'}
               className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10"
             >
@@ -365,23 +370,22 @@ function PostCard({
         </div>
 
         {/* Content */}
-        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">{post.content}</p>
+        <p className="gsc-post-text text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">{post.content}</p>
 
         {/* Image */}
         {post.image_url && (
           <div className="relative group rounded-xl overflow-hidden mb-3 bg-muted border border-border/40">
-            <img
-              src={post.image_url}
-              alt="Post image"
-              onClick={() => onImageClick(post.image_url!)}
-              className="w-full max-h-[420px] object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
-              loading="lazy"
-            />
+            <button type="button" className="gsc-post-photo" onClick={() => onImageClick(post.image_url!)}
+              aria-label={`View full photo shared by ${post.author_name}`}>
+              <img src={post.image_url} alt={`Photo shared by ${post.author_name}`}
+                className="w-full max-h-[420px] object-contain" loading="lazy" />
+            </button>
             {canDownload && (
               <button
                 onClick={(e) => { e.stopPropagation(); downloadImage(post.image_url!); }}
+                aria-label="Download photo"
                 title="Download photo"
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="gsc-photo-download absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Download className="w-4 h-4 text-white" />
               </button>
@@ -390,9 +394,11 @@ function PostCard({
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-1 pt-1 border-t border-border/60">
+        <div className="gsc-post-actions flex items-center gap-1 pt-1 border-t border-border/60">
           <button
             onClick={handleLike}
+            aria-pressed={post.user_liked}
+            aria-label={`${post.user_liked ? 'Unlike' : 'Like'} post by ${post.author_name}`}
             disabled={!personId}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all active:scale-90
               ${post.user_liked
@@ -401,11 +407,13 @@ function PostCard({
               }`}
           >
             <Heart className={`w-4 h-4 transition-transform ${post.user_liked ? 'fill-rose-500 scale-110' : ''} ${justLiked ? 'animate-feed-like-pop' : ''}`} />
-            <span className="tabular-nums">{post.like_count}</span>
+            <span>{post.user_liked ? 'Liked' : 'Like'}</span><span className="gsc-action-count tabular-nums">{post.like_count}</span>
           </button>
 
           <button
             onClick={() => setShowComments(v => !v)}
+            aria-expanded={showComments}
+            aria-controls={`comments-${post.id}`}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all active:scale-90
               ${showComments
                 ? 'text-blue-500 bg-blue-50 dark:bg-blue-950/30'
@@ -413,12 +421,12 @@ function PostCard({
               }`}
           >
             <MessageCircle className={`w-4 h-4 transition-transform duration-300 ${showComments ? 'scale-110' : ''}`} />
-            <span className="tabular-nums">{post.comment_count}</span>
+            <span>Comments</span><span className="gsc-action-count tabular-nums">{post.comment_count}</span>
           </button>
         </div>
 
         {showComments && (
-          <div className="animate-feed-comments">
+          <div id={`comments-${post.id}`} className="animate-feed-comments">
             <CommentSection postId={post.id} personId={personId} canModerate={canModerate} />
           </div>
         )}
@@ -814,7 +822,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="gsc-feed-page min-h-screen bg-background">
       {/* Birthday Modal */}
       {showBirthdayModal && (
         <BirthdayModal name={birthdayName} onClose={() => setShowBirthdayModal(false)} />
@@ -849,7 +857,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
       </div>
 
       {/* Feed */}
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-3 pb-6">
+      <div className="gsc-feed-content max-w-2xl mx-auto px-4 py-5 space-y-3 pb-6">
 
        {isLoggedIn && personId && userProfile && (
   <>
@@ -864,14 +872,16 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
 
         {/* Create Post — logged in users only */}
         {isLoggedIn ? (
-        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary/40 transition-all">
+        <div className="gsc-post-composer bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary/40 transition-all">
           <div className="flex gap-3 items-start">
             {userProfile && (
               <Avatar picture={userProfile.profile_picture} name={userProfile.full_name} />
             )}
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 min-w-0 space-y-3">
+              <label htmlFor="gsc-post-content" className="gsc-composer-label">Share with your church family</label>
               <Textarea
-                placeholder="What's on your mind? Share an update with your church family…"
+                id="gsc-post-content"
+                placeholder="Share news, photos, or a moment from church life…"
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 rows={3}
@@ -884,6 +894,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                   <img src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover" />
                   <button
                     onClick={removeImage}
+                    aria-label="Remove selected photo"
                     className="absolute top-2 right-2 bg-black/60 text-white p-1 rounded-full hover:bg-black/80 transition-colors"
                   >
                     <X className="w-4 h-4" />
@@ -891,7 +902,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-0.5">
+              <div className="gsc-composer-toolbar flex items-center justify-between pt-0.5">
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => fileInputRef.current?.click()}
