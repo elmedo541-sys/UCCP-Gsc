@@ -1,3 +1,4 @@
+import AuthBrand from "@/components/AuthBrand";
 import "./AuthPages.css";
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -181,18 +182,12 @@ export default function Register() {
   const sectionHeadCls = "flex items-center gap-2 text-xs font-semibold gsc-auth-muted uppercase tracking-widest mb-3";
 
   return (
-    <div className="gsc-auth min-h-screen p-4 py-10">
-      <header className="gsc-auth-brand">
-        <a href="/" aria-label="Good Samaritan Church home">
-          <img src="/uccp-logo-transparent.png" alt="UCCP logo" width="52" height="52" />
-          <span><small>UNITED CHURCH OF CHRIST IN THE PHILIPPINES</small><strong>Good Samaritan Church</strong></span>
-        </a>
-        <p>Register to stay connected with your church family.</p>
-      </header>
+    <div className="gsc-auth gsc-auth-refresh gsc-auth-registration min-h-screen p-4 py-10">
+      <AuthBrand description="Join our member directory and stay connected with your church family." />
       <div className="w-full max-w-3xl relative z-10 ">
 
         {/* ── Progress ─────────────────────────────────────────────────────── */}
-        <div className="mb-6 flex items-center justify-center">
+        <div className="gsc-auth-progress mb-6 flex items-center justify-center">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             const isActive = step === s.num;
@@ -247,7 +242,7 @@ export default function Register() {
             </div>
           </CardHeader>
 
-          <CardContent className="pt-6">
+          <CardContent key={step} className="gsc-auth-step pt-6">
 
             {/* ════════════════════ STEP 1 ════════════════════════════════ */}
             {step === 1 && (

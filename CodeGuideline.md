@@ -131,3 +131,7 @@ Whenever a new module (such as a component, hook, or utility) or a new page is a
 - `frontend/src/components/ListPagination.tsx`: shared result counts and Previous/Next controls. Directory uses server ranges; gallery/admin member lists use local slices.
 - `frontend/src/lib/mediaFiles.ts`: feed/gallery file validation and optional browser photo compression. Backend permissions remain mandatory.
 - `docs/RELIABILITY_AND_PERMISSIONS_REVIEW.md`: verified backend permission findings, validation results and pending release checks.
+
+## Authentication page design
+
+`frontend/src/components/AuthBrand.tsx` shares the church identity panel across member login, admin login and registration. Scoped `.gsc-auth-refresh` styles in `frontend/src/pages/AuthPages.css` provide responsive layouts and entrance/hover/step animations, respecting prefers-reduced-motion. Authentication handlers are unchanged.

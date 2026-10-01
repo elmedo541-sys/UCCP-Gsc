@@ -1,3 +1,4 @@
+import AuthBrand from "@/components/AuthBrand";
 import "./AuthPages.css";
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -49,14 +50,8 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="gsc-auth min-h-screen p-4 py-10">
-      <header className="gsc-auth-brand">
-        <a href="/" aria-label="Good Samaritan Church home">
-          <img src="/uccp-logo-transparent.png" alt="UCCP logo" width="52" height="52" />
-          <span><small>UNITED CHURCH OF CHRIST IN THE PHILIPPINES</small><strong>Good Samaritan Church</strong></span>
-        </a>
-        <p>Sign in to manage church records and activities.</p>
-      </header>
+    <div className="gsc-auth gsc-auth-refresh gsc-auth-login min-h-screen p-4 py-10">
+      <AuthBrand description="Manage church records and activities with care." admin />
       {/* Card */}
       <div
         ref={cardRef}
