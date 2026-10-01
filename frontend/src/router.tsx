@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import PageLoader from "@/components/PageLoader";
+import MemberNavigation from "@/components/MemberNavigation";
 
 // Lazy-load every route so the browser only downloads the code for the
 // page the visitor is actually on, instead of one giant bundle up front.
@@ -24,11 +25,14 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Wraps a lazy page in Suspense with a lightweight fallback so navigating
 // between routes shows a quick spinner instead of a blank white screen.
-function withSuspense(Component: React.LazyExoticComponent<() => React.JSX.Element>) {
+function withSuspense(Component: React.LazyExoticComponent<() => React.JSX.Element>, memberNavigation = false) {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Component />
-    </Suspense>
+    <div className={memberNavigation ? "gsc-member-route" : undefined}>
+      {memberNavigation && <MemberNavigation />}
+      <Suspense fallback={<PageLoader />}>
+        <Component />
+      </Suspense>
+    </div>
   );
 }
 
@@ -56,12 +60,12 @@ export const routers = [
     {
       path: "/user/profile",
       name: 'user-profile',
-      element: withSuspense(UserProfile),
+      element: withSuspense(UserProfile, true),
     },
     {
       path: "/feed",
       name: 'feed',
-      element: withSuspense(Feed),
+      element: withSuspense(Feed, true),
     },
     {
       path: "/admin/login",
@@ -91,22 +95,22 @@ export const routers = [
     {
       path: "/gallery",
       name: 'media-gallery',
-      element: withSuspense(MediaGallery),
+      element: withSuspense(MediaGallery, true),
     },
     {
       path: "/events",
       name: 'events',
-      element: withSuspense(Events),
+      element: withSuspense(Events, true),
     },
     {
       path: "/directory",
       name: 'member-directory',
-      element: withSuspense(MemberDirectory),
+      element: withSuspense(MemberDirectory, true),
     },
     {
       path: "/prayer-requests",
       name: 'prayer-requests',
-      element: withSuspense(PrayerRequests),
+      element: withSuspense(PrayerRequests, true),
     },
     {
       path: "/admin/events",

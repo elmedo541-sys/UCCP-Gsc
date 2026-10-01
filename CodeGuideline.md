@@ -110,3 +110,11 @@ Whenever a new module (such as a component, hook, or utility) or a new page is a
    <Route path="/profile" element={<Profile />} />
    ```
 5. **If you need a reusable button, add it to `src/components/ui/button.tsx`.**
+
+
+## Shared Member Navigation
+
+- `frontend/src/components/MemberNavigation.tsx` provides labeled desktop links and an expandable mobile menu for Feed, Events, Gallery, Directory, Prayer Wall, and My Profile.
+- `frontend/src/router.tsx` renders it once above each member route; navigation stays visible during lazy loading.
+- Navigation styles are scoped under `.gsc-member-navigation` and `.gsc-member-route` in `frontend/src/index.css`.
+- The Feed uses this shared bar instead of its separate desktop shortcuts and mobile bottom tabs.

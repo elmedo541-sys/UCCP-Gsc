@@ -18,7 +18,6 @@ import UserMenu from '@/components/UserMenu';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import ProfileNudge from '@/components/ProfileNudge';
 import NotificationBell from '@/components/NotificationBell';
-import MobileNavBar from '@/components/MobileNavBar';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface PostRow {
@@ -837,23 +836,6 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <div className="hidden md:flex items-center gap-1">
-              {[
-                { icon: Users, path: '/directory', label: 'Directory' },
-                { icon: Calendar, path: '/events', label: 'Events' },
-                { icon: BookOpen, path: '/prayer-requests', label: 'Prayers' },
-                { icon: Film, path: '/gallery', label: 'Gallery' },
-              ].map(({ icon: Icon, path, label }) => (
-                <button
-                  key={path}
-                  onClick={() => navigate(path)}
-                  title={label}
-                  className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <Icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
             {isLoggedIn && personId && <NotificationBell personId={personId} />}
             {isLoggedIn && userProfile ? (
               <UserMenu name={userProfile.full_name} picture={userProfile.profile_picture} />
@@ -867,7 +849,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
       </div>
 
       {/* Feed */}
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-3 pb-24 md:pb-6">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-3 pb-6">
 
        {isLoggedIn && personId && userProfile && (
   <>
@@ -989,7 +971,7 @@ CREATE POLICY "delete" ON feed_comments FOR DELETE USING (true);`;
       </div>
 
       <ChatSupportWidget />
-      <MobileNavBar />
+
 
       {/* Image lightbox */}
       {lightboxImage && (

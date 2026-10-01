@@ -396,3 +396,16 @@ body,
 .dark .gsc-page-layout .gsc-feed-posts img[class*="max-h-"]{background:#172432}
 @media(min-width:1400px){.gsc-page-layout .gsc-feed-posts:has(>:nth-child(2)){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.gsc-page-layout{font-size:16px}.gsc-page-layout .text-xs{font-size:13px}.gsc-page-layout .text-sm{font-size:15px}.gsc-page-layout :is(input,textarea,[role=combobox]){font-size:16px}.gsc-page-layout .gsc-home .gsc-brand strong{font-size:18px}.gsc-page-layout .gsc-home .gsc-brand small{font-size:8px}}
+
+/* Shared, labeled navigation for all member routes. */
+.gsc-member-navigation{position:sticky;top:0;z-index:45;background:var(--background);background:hsl(var(--background));color:hsl(var(--foreground));border-bottom:1px solid hsl(var(--border))}
+.gsc-member-navigation-top{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:12px clamp(16px,2.5vw,48px);min-height:76px}
+.gsc-navigation-brand{display:flex;align-items:center;gap:12px;flex-shrink:0;font-size:17px;font-weight:600;line-height:1.35}
+.gsc-navigation-brand img{object-fit:contain;flex-shrink:0}.gsc-navigation-brand small{display:block;font-size:12px;font-weight:400;color:hsl(var(--muted-foreground));margin-top:3px}
+.gsc-member-links{display:flex;align-items:center;gap:4px}.gsc-member-link{display:flex;align-items:center;gap:7px;white-space:nowrap;padding:11px 12px;font-size:15px;font-weight:500;border-radius:6px;min-height:44px;border-bottom:3px solid transparent}
+.gsc-member-link svg{width:18px;height:18px;flex-shrink:0}.gsc-member-link:hover{background:hsl(var(--muted))}.gsc-member-link.is-active{background:#193044;color:#fff;border-bottom-color:#b89752}
+.gsc-member-navigation :is(a,button):focus-visible{outline:3px solid #b89752;outline-offset:3px}
+.gsc-navigation-toggle{display:none;align-items:center;gap:8px;padding:10px 12px;border:1px solid hsl(var(--border));border-radius:6px;min-height:44px}.gsc-navigation-toggle svg{width:20px;height:20px}
+.gsc-member-route>div>header.sticky,.gsc-member-route>div>.sticky{position:relative;top:auto}
+@media(max-width:1199px){.gsc-member-navigation-top{flex-wrap:wrap;gap:12px}.gsc-navigation-toggle{display:inline-flex}.gsc-member-links{display:none;width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:12px;border-top:1px solid hsl(var(--border))}.gsc-member-links.is-open{display:grid}.gsc-member-link{white-space:normal}}
+@media(max-width:600px){.gsc-navigation-brand{font-size:15px;gap:8px}.gsc-navigation-brand img{width:34px;height:34px}.gsc-navigation-brand small{font-size:11px}.gsc-member-links{grid-template-columns:repeat(2,minmax(0,1fr))}.gsc-member-link{font-size:15px;padding:12px}.gsc-navigation-toggle{padding:10px;gap:6px}}
