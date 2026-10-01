@@ -367,3 +367,32 @@ body,
   .gsc-page-layout .gsc-home .gsc-wrap { width: calc(100% - 32px); }
   .gsc-page-layout .gsc-auth { padding-inline: 16px; }
 }
+
+/* Readable typography for expanded page layouts. */
+.gsc-page-layout{font-size:18px;line-height:1.65}
+.gsc-page-layout .text-xs{font-size:14px;line-height:1.55}
+.gsc-page-layout .text-sm{font-size:16px;line-height:1.6}
+.gsc-page-layout .text-base{font-size:18px;line-height:1.65}
+.gsc-page-layout .text-lg{font-size:21px;line-height:1.4}
+.gsc-page-layout .text-xl{font-size:25px;line-height:1.35}
+.gsc-page-layout .text-2xl{font-size:32px;line-height:1.3}
+.gsc-page-layout :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,[role=combobox]){font-size:17px;line-height:1.5;min-height:50px}
+.gsc-page-layout textarea{padding-block:14px}
+.gsc-page-layout button:not(.gsc-member-card):not(.gsc-event-card){font-size:16px}
+.gsc-page-layout header button,.gsc-page-layout .sticky button{min-height:44px}
+.gsc-page-layout .gsc-home .gsc-nav{font-size:16px}
+.gsc-page-layout .gsc-home .gsc-brand strong{font-size:23px}
+.gsc-page-layout .gsc-home .gsc-brand small{font-size:10px}
+.gsc-page-layout .gsc-home :is(.gsc-hero-description,.gsc-intro>div>p:not(.gsc-eyebrow)){font-size:18px}
+.gsc-page-layout .gsc-home :is(.gsc-text-link,.gsc-hero-link,.gsc-gold){font-size:16px}
+.gsc-page-layout .gsc-home :is(.gsc-member-card h3,.gsc-event-card h3,.gsc-empty h3){font-size:20px}
+.gsc-page-layout .gsc-home :is(.gsc-member-card p,.gsc-event-card p,.gsc-empty p){font-size:16px}
+.gsc-page-layout .gsc-home :is(.gsc-member-card span,.gsc-footer-links button,.gsc-member-note){font-size:14px}
+.gsc-page-layout .gsc-home :is(.gsc-footer-bottom,.gsc-footer-brand p){font-size:13px}
+.gsc-page-layout .gsc-home .gsc-eyebrow{font-size:13px}
+/* Single posts occupy the row; two columns only when there are multiple posts. */
+.gsc-page-layout .gsc-feed-posts{grid-template-columns:minmax(0,1fr);gap:28px}
+.gsc-page-layout .gsc-feed-posts img[class*="max-h-"]{max-height:600px;object-fit:contain;background:#f4f5f7}
+.dark .gsc-page-layout .gsc-feed-posts img[class*="max-h-"]{background:#172432}
+@media(min-width:1400px){.gsc-page-layout .gsc-feed-posts:has(>:nth-child(2)){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gsc-page-layout{font-size:16px}.gsc-page-layout .text-xs{font-size:13px}.gsc-page-layout .text-sm{font-size:15px}.gsc-page-layout :is(input,textarea,[role=combobox]){font-size:16px}.gsc-page-layout .gsc-home .gsc-brand strong{font-size:18px}.gsc-page-layout .gsc-home .gsc-brand small{font-size:8px}}

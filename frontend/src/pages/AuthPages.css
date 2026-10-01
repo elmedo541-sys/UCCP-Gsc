@@ -4,3 +4,24 @@
 .gsc-auth .gsc-auth-card{background:var(--auth-surface);color:var(--auth-ink);box-shadow:0 5px 20px #142b3d06;border-radius:8px}.gsc-auth .gsc-auth-border{border-color:var(--auth-border)}.gsc-auth .gsc-auth-ink,.gsc-auth .gsc-auth-label{color:var(--auth-ink)}.gsc-auth .gsc-auth-muted{color:var(--auth-muted)}.gsc-auth .gsc-auth-field{background:var(--auth-surface);border-color:var(--auth-border);color:var(--auth-ink);min-height:44px;border-radius:5px}.gsc-auth input::placeholder,.gsc-auth textarea::placeholder{color:var(--auth-muted);opacity:.8}.gsc-auth .gsc-auth-field:focus-visible{outline:2px solid var(--auth-gold);outline-offset:2px;box-shadow:none}.gsc-auth .gsc-auth-inset{background:var(--auth-inset)}.gsc-auth .gsc-auth-divider{background:var(--auth-border)}.gsc-auth .gsc-auth-link{color:var(--auth-ink)}.gsc-auth .gsc-auth-link:hover{color:var(--auth-gold)}.gsc-auth .gsc-auth-icon{background:var(--auth-inset)}.gsc-auth .gsc-auth-accent{background:#b89752}.gsc-auth .gsc-auth-button{background:var(--auth-button);color:#fff;box-shadow:none}.dark .gsc-auth .gsc-auth-button{color:#193044}.gsc-auth .gsc-auth-button:hover{background:var(--auth-button-hover)}.gsc-auth .gsc-auth-button:disabled{opacity:.55}.gsc-auth .gsc-auth-done{background:#e3eee5;color:#24603a;border-color:#98b6a0;box-shadow:none}.gsc-auth .gsc-auth-success{color:#287143}.gsc-auth .gsc-auth-error{color:#b33131}.dark .gsc-auth .gsc-auth-success{color:#8bd6a1}.dark .gsc-auth .gsc-auth-error{color:#ffa0a0}
 .gsc-auth h1{font-family:Georgia,'Times New Roman',serif;font-weight:400}.gsc-auth button:focus-visible,.gsc-auth a:focus-visible{outline:2px solid var(--auth-gold);outline-offset:3px}.gsc-auth input[type=checkbox]{min-height:0;width:16px;height:16px;accent-color:var(--auth-button)}.gsc-auth button{min-height:40px}.gsc-auth [role=combobox]{min-height:44px}.gsc-auth .divide-y>:not([hidden])~:not([hidden]){border-color:var(--auth-border)}.gsc-auth [type=submit]{min-height:44px}.gsc-auth .animate-bounce{animation:none}.gsc-auth .scale-\[1\.02\]{transform:none}
 @media(max-width:600px){.gsc-auth{padding-top:24px}.gsc-auth-brand{padding:8px 26px 22px;margin-bottom:24px}.gsc-auth-brand img{width:42px;height:42px}.gsc-auth-brand strong{font-size:16px}.gsc-auth-brand small{font-size:7px;letter-spacing:.6px}.gsc-auth-brand p{font-size:12px}.gsc-auth .p-8{padding:24px}.gsc-auth .text-xs{font-size:13px;line-height:1.5}.gsc-auth .grid-cols-2>span{min-width:0;overflow-wrap:anywhere}}@media(prefers-reduced-motion:reduce){.gsc-auth *{animation:none!important;transition:none!important}}
+
+/* Readable forms and balanced full-width branding. */
+.gsc-page-layout .gsc-auth .gsc-auth-card .p-8{padding:clamp(24px,3vw,48px)}
+.gsc-page-layout .gsc-auth h1{font-size:38px;line-height:1.2}
+.gsc-page-layout .gsc-auth .gsc-auth-field{min-height:54px;font-size:17px}
+.gsc-page-layout .gsc-auth :is(.gsc-auth-label,label){font-size:16px;line-height:1.5}
+.gsc-page-layout .gsc-auth input[type=checkbox]{width:20px;height:20px;min-height:0}
+.gsc-page-layout .gsc-auth button{min-height:46px}
+.gsc-page-layout .gsc-auth [type=submit]{min-height:54px;font-size:18px}
+.gsc-page-layout .gsc-auth .gsc-auth-muted{font-size:15px}
+.gsc-page-layout .gsc-auth .grid{gap:20px}
+@media(min-width:1024px){
+.gsc-page-layout .gsc-auth{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:clamp(28px,3vw,56px);padding:clamp(28px,3vw,56px)}
+.gsc-page-layout .gsc-auth .gsc-auth-brand{background:#193044;color:#fff;padding:clamp(32px,4vw,64px);border-radius:8px;border-top:4px solid #b89752;min-height:540px;display:flex;flex-direction:column;justify-content:center}
+.gsc-page-layout .gsc-auth-brand a{color:#fff}
+.gsc-page-layout .gsc-auth-brand small{color:#d6dfdf;font-size:11px;letter-spacing:1.3px}
+.gsc-page-layout .gsc-auth-brand img{width:112px;height:112px}
+.gsc-page-layout .gsc-auth-brand strong{font-size:clamp(32px,2.7vw,48px)}
+.gsc-page-layout .gsc-auth-brand p{color:#d6dfdf;font-size:18px;margin-top:24px}
+}
+@media(max-width:640px){.gsc-page-layout .gsc-auth h1{font-size:32px}.gsc-page-layout .gsc-auth .gsc-auth-field{font-size:16px;min-height:50px}.gsc-page-layout .gsc-auth .grid{gap:14px}}
