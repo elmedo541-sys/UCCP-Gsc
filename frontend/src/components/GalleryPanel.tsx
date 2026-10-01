@@ -375,7 +375,7 @@ export default function GalleryPanel({
 
   // ── RENDER ───────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
+    <div className="gsc-gallery-panel space-y-4">
 
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -391,6 +391,8 @@ export default function GalleryPanel({
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
+                aria-pressed={active}
+                aria-label={`${tab.label}: ${count} items`}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                   active
                     ? `${tab.color} text-white border-transparent shadow-sm`
@@ -451,7 +453,7 @@ export default function GalleryPanel({
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Folders</p>
               </div>
               {orgFolders.length === 0 && !canManageOrg(activeTab) ? null : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                <div className="gsc-gallery-grid">
                   {orgFolders.map(folder => {
                     const count = media.filter(m => m.folder_id === folder.id).length;
                     const isDropTarget = canManageOrg(folder.organization);
@@ -644,20 +646,20 @@ export default function GalleryPanel({
           </div>
         ) : null
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div className="gsc-gallery-grid">
           {filtered.map((item, idx) => {
             const tab = TAB_MAP[item.organization];
             const draggable = canManageOrg(item.organization) && !activeFolderId;
             return (
               <Card
                 key={item.id}
-                onClick={() => setLightboxIdx(idx)}
                 draggable={draggable}
                 onDragStart={(e) => { setDraggedItemId(item.id); e.dataTransfer.effectAllowed = 'move'; }}
                 onDragEnd={() => { setDraggedItemId(null); setDragOverFolderId(null); }}
                 className={`group relative aspect-square overflow-hidden border-border p-0
                   ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
               >
+                <button type="button" className="gsc-gallery-preview" aria-label={`Open ${item.title || (item.file_type === 'video' ? 'video' : 'photo')}`} onClick={() => setLightboxIdx(idx)}>
                 {item.file_type === 'video' ? (
                   <VideoThumb url={item.file_url} />
                 ) : (
@@ -669,24 +671,27 @@ export default function GalleryPanel({
                   />
                 )}
 
+                </button>
+
                 {/* Organization badge */}
                 {tab && activeTab === 'ALL' && (
-                  <span className={`absolute top-1.5 left-1.5 text-[10px] px-1.5 py-0.5 rounded-full text-white ${tab.color}`}>
+                  <span className={`pointer-events-none absolute top-1.5 left-1.5 text-[10px] px-1.5 py-0.5 rounded-full text-white ${tab.color}`}>
                     {tab.label}
                   </span>
                 )}
 
                 {/* Caption overlay */}
                 {item.title && (
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pt-4 pb-1.5">
+                  <div className="gsc-gallery-caption pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pt-4 pb-1.5">
                     <p className="text-white text-[11px] font-medium line-clamp-1">{item.title}</p>
                   </div>
                 )}
 
                 {/* Download + Delete buttons */}
-                <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="gsc-gallery-actions absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownload(item); }}
+                    aria-label={`Download ${item.title || 'media'}`}
                     title="Download"
                     className="w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center"
                   >
@@ -694,6 +699,7 @@ export default function GalleryPanel({
                   </button>
                   {canDelete && (
                     <button
+                      aria-label={`Delete ${item.title || 'media'}`}
                       onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
                       className="w-6 h-6 rounded-full bg-black/60 hover:bg-destructive flex items-center justify-center"
                     >

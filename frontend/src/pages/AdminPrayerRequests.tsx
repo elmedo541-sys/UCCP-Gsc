@@ -124,14 +124,14 @@ export default function AdminPrayerRequests() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="gsc-managed-page gsc-admin-prayer-requests-page min-h-screen flex items-center justify-center bg-muted/30">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="gsc-managed-page gsc-admin-prayer-requests-page min-h-screen bg-muted/30">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">

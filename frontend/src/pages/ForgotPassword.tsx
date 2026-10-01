@@ -1,3 +1,4 @@
+import "./AuthPages.css";
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,12 +74,12 @@ function OTPInput({ value, onChange }: { value: string; onChange: (v: string) =>
             onChange={e => handleChange(i, e.target.value)}
             onKeyDown={e => handleKey(i, e)}
             onPaste={handlePaste}
-            className={`w-11 h-14 text-center text-xl font-bold rounded-xl border-2 outline-none
-              bg-gray-800 text-white
+            className={`w-11 h-14 text-center text-xl font-bold rounded-md border-2 outline-none
+              gsc-auth-field gsc-auth-ink
               transition-all duration-150 caret-transparent
               ${filled
-                ? 'border-blue-500 bg-gray-700 shadow-md shadow-blue-500/20'
-                : 'border-gray-600 focus:border-blue-400'
+                ? 'border-blue-500 gsc-auth-divider shadow-md shadow-blue-500/20'
+                : 'gsc-auth-border focus:border-blue-400'
               }`}
           />
         );
@@ -209,39 +210,33 @@ export default function ForgotPassword() {
     }
   };
 
-  const inputCls = "bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 rounded-xl h-11";
+  const inputCls = "gsc-auth-field gsc-auth-border gsc-auth-ink placeholder:text-[var(--auth-muted)] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 rounded-md h-11";
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{
-        backgroundImage: 'url(https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100020016/c91049a2-add2-40.png)',
-        backgroundSize: 'cover', backgroundPosition: 'center',
-      }}
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-
-      {/* Floating orbs */}
-      <div className="absolute top-[12%] left-[7%]   w-44 h-44 rounded-full bg-blue-500/15   blur-3xl auth-float-1 pointer-events-none" />
-      <div className="absolute bottom-[12%] right-[5%] w-56 h-56 rounded-full bg-purple-500/15 blur-3xl auth-float-2 pointer-events-none" />
-      <div className="absolute top-[50%] left-[12%] w-32 h-32  rounded-full bg-indigo-400/15  blur-2xl auth-float-3 pointer-events-none" />
-
-      <div className="w-full max-w-md relative z-10 auth-card-enter">
-        <div className="bg-gray-900/95 backdrop-blur-md border border-gray-700 shadow-2xl rounded-2xl overflow-hidden">
+    <div className="gsc-auth min-h-screen p-4 py-10">
+      <header className="gsc-auth-brand">
+        <a href="/" aria-label="Good Samaritan Church home">
+          <img src="/uccp-logo-transparent.png" alt="UCCP logo" width="52" height="52" />
+          <span><small>UNITED CHURCH OF CHRIST IN THE PHILIPPINES</small><strong>Good Samaritan Church</strong></span>
+        </a>
+        <p>Recover access to your church account.</p>
+      </header>
+      <div className="w-full max-w-md relative z-10 ">
+        <div className="gsc-auth-card  border gsc-auth-border shadow-sm rounded-lg overflow-hidden">
 
           {/* Accent bar */}
-          <div className="h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400" />
+          <div className="h-1 gsc-auth-accent" />
 
           <div className="p-8">
 
             {/* ── SUCCESS ── */}
             {step === 'success' && (
               <div className="text-center py-4 space-y-4">
-                <div className="mx-auto w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center auth-success-bounce">
-                  <CheckCircle className="w-10 h-10 text-green-400" />
+                <div className="mx-auto w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center ">
+                  <CheckCircle className="w-10 h-10 gsc-auth-success" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">Password Reset!</h2>
-                <p className="text-gray-400 text-sm">Your password has been updated. Redirecting to login…</p>
+                <h2 className="text-2xl font-bold gsc-auth-ink">Password Reset!</h2>
+                <p className="gsc-auth-muted text-sm">Your password has been updated. Redirecting to login…</p>
                 <div className="flex justify-center gap-2 pt-2">
                   {[0,1,2].map(i => (
                     <div key={i} className="w-2 h-2 rounded-full bg-green-400 animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />
@@ -255,15 +250,15 @@ export default function ForgotPassword() {
               <>
                 {/* Header */}
                 <div className="text-center mb-6">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center mb-4 auth-pulse-ring">
-                    <KeyRound className="w-7 h-7 text-blue-400" />
+                  <div className="mx-auto w-14 h-14 rounded-lg gsc-auth-icon border border-blue-500/40 flex items-center justify-center mb-4 ">
+                    <KeyRound className="w-7 h-7 gsc-auth-link" />
                   </div>
-                  <h1 className="text-2xl font-bold text-white">Recover Account</h1>
-                  <p className="text-gray-400 text-sm mt-1">Choose how to verify your identity</p>
+                  <h1 className="text-2xl font-bold gsc-auth-ink">Recover Account</h1>
+                  <p className="gsc-auth-muted text-sm mt-1">Choose how to verify your identity</p>
                 </div>
 
                 {/* Method toggle */}
-                <div className="flex rounded-xl overflow-hidden border border-gray-700 mb-6">
+                <div className="flex rounded-md overflow-hidden border gsc-auth-border mb-6">
                   {(['phone', 'email'] as Method[]).map(m => (
                     <button
                       key={m}
@@ -271,8 +266,8 @@ export default function ForgotPassword() {
                       onClick={() => setMethod(m)}
                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition-all duration-200
                         ${method === m
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
+                          ? 'gsc-auth-button gsc-auth-ink'
+                          : 'gsc-auth-field gsc-auth-muted hover:text-[var(--auth-ink)] hover:bg-gray-700'
                         }`}
                     >
                       {m === 'phone' ? <Phone className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
@@ -284,11 +279,11 @@ export default function ForgotPassword() {
                 <form onSubmit={handleSend} className="space-y-4">
                   {method === 'phone' ? (
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-sm font-medium">
+                      <Label className="gsc-auth-label text-sm font-medium">
                         Registered Phone Number
                       </Label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 gsc-auth-muted" />
                         <Input
                           type="tel"
                           required
@@ -299,20 +294,20 @@ export default function ForgotPassword() {
                           className={`pl-10 ${inputCls} ${phone.length === 11 ? 'border-green-500' : ''}`}
                         />
                         {phone.length === 11 && (
-                          <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400 auth-check-pop" />
+                          <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 gsc-auth-success " />
                         )}
                       </div>
-                      <p className={`text-xs ${phone.length === 11 ? 'text-green-400' : phone.length > 0 ? 'text-orange-400' : 'text-gray-500'}`}>
+                      <p className={`text-xs ${phone.length === 11 ? 'gsc-auth-success' : phone.length > 0 ? 'text-orange-400' : 'gsc-auth-muted'}`}>
                         {phone.length}/11 digits{phone.length === 11 ? ' ✓' : ''}
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-1.5">
-                      <Label className="text-gray-200 text-sm font-medium">
+                      <Label className="gsc-auth-label text-sm font-medium">
                         Registered Email Address
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 gsc-auth-muted" />
                         <Input
                           type="email"
                           required
@@ -328,7 +323,7 @@ export default function ForgotPassword() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white border-0 h-11 rounded-xl font-semibold gap-2 transition-all duration-200"
+                    className="w-full gsc-auth-button hover:bg-[var(--auth-button-hover)] gsc-auth-ink border-0 h-11 rounded-md font-semibold gap-2 transition-all duration-200"
                   >
                     {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</> : 'Send Verification Code'}
                   </Button>
@@ -337,8 +332,8 @@ export default function ForgotPassword() {
                 <button
                   type="button"
                   onClick={() => navigate('/user/login')}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
-                    text-gray-400 hover:text-white text-sm border border-gray-700 hover:border-gray-500 hover:bg-gray-800 transition-all duration-200"
+                  className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-md
+                    gsc-auth-muted hover:text-[var(--auth-ink)] text-sm border gsc-auth-border hover:border-gray-500 hover:bg-[var(--auth-inset)] transition-all duration-200"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back to Login
                 </button>
@@ -349,11 +344,11 @@ export default function ForgotPassword() {
             {step === 'code' && (
               <>
                 <div className="text-center mb-6">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center mb-4">
-                    <ShieldCheck className="w-7 h-7 text-purple-400" />
+                  <div className="mx-auto w-14 h-14 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center mb-4">
+                    <ShieldCheck className="w-7 h-7 gsc-auth-link" />
                   </div>
-                  <h1 className="text-2xl font-bold text-white">Enter Code</h1>
-                  <p className="text-gray-400 text-sm mt-1">
+                  <h1 className="text-2xl font-bold gsc-auth-ink">Enter Code</h1>
+                  <p className="gsc-auth-muted text-sm mt-1">
                     Enter the 6-digit code
                     {method === 'phone' ? ` for +63${phone.slice(1)}` : ` sent to ${email}`}
                   </p>
@@ -365,26 +360,26 @@ export default function ForgotPassword() {
                   <div className="flex gap-3">
                     <Button
                       type="button"
-                      onClick={() => { setStep('input'); setOtpCode(''); setDevCode(''); }}
-                      className="border border-gray-600 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl"
+                      onClick={() => { setStep('input'); setOtpCode(''); }}
+                      className="border gsc-auth-border bg-transparent gsc-auth-label hover:bg-[var(--auth-inset)] hover:text-[var(--auth-ink)] rounded-md"
                     >
                       <ArrowLeft className="w-4 h-4 mr-1" /> Back
                     </Button>
                     <Button
                       type="submit"
                       disabled={otpCode.length < 6}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0 rounded-xl font-semibold gap-2 disabled:opacity-50"
+                      className="flex-1 gsc-auth-button hover:bg-[var(--auth-button-hover)] gsc-auth-ink border-0 rounded-md font-semibold gap-2 disabled:opacity-50"
                     >
                       Verify Code
                     </Button>
                   </div>
 
-                  <p className="text-center text-xs text-gray-500">
+                  <p className="text-center text-xs gsc-auth-muted">
                     Didn't get a code?{' '}
                     <button
                       type="button"
-                      onClick={() => { setStep('input'); setOtpCode(''); setDevCode(''); }}
-                      className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                      onClick={() => { setStep('input'); setOtpCode(''); }}
+                      className="gsc-auth-link hover:text-blue-300 underline transition-colors"
                     >
                       Try again
                     </button>
@@ -397,16 +392,16 @@ export default function ForgotPassword() {
             {step === 'password' && (
               <>
                 <div className="text-center mb-6">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-green-500/20 border border-green-500/40 flex items-center justify-center mb-4">
-                    <KeyRound className="w-7 h-7 text-green-400" />
+                  <div className="mx-auto w-14 h-14 rounded-lg bg-green-500/20 border border-green-500/40 flex items-center justify-center mb-4">
+                    <KeyRound className="w-7 h-7 gsc-auth-success" />
                   </div>
-                  <h1 className="text-2xl font-bold text-white">New Password</h1>
-                  <p className="text-gray-400 text-sm mt-1">Code verified. Set your new password.</p>
+                  <h1 className="text-2xl font-bold gsc-auth-ink">New Password</h1>
+                  <p className="gsc-auth-muted text-sm mt-1">Code verified. Set your new password.</p>
                 </div>
 
                 <form onSubmit={handleReset} className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-gray-200 text-sm font-medium">New Password</Label>
+                    <Label className="gsc-auth-label text-sm font-medium">New Password</Label>
                     <div className="relative">
                       <Input
                         type={showPw ? 'text' : 'password'}
@@ -418,27 +413,27 @@ export default function ForgotPassword() {
                         className={`pr-10 ${inputCls}`}
                       />
                       <button type="button" onClick={() => setShowPw(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                        className="absolute right-3 top-1/2 -translate-y-1/2 gsc-auth-muted hover:text-[var(--auth-ink)] transition-colors">
                         {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                     {newPassword.length > 0 && (
                       <div className="space-y-1">
-                        <div className="h-1.5 rounded-full bg-gray-700 overflow-hidden">
+                        <div className="h-1.5 rounded-full gsc-auth-divider overflow-hidden">
                           <div className={`h-full rounded-full transition-all duration-500 ${pwStrength.color}`}
                             style={{ width: `${(pwStrength.score / 5) * 100}%` }} />
                         </div>
                         <p className={`text-xs font-medium ${
                           pwStrength.score <= 1 ? 'text-red-400' :
                           pwStrength.score <= 2 ? 'text-orange-400' :
-                          pwStrength.score <= 3 ? 'text-yellow-400' : 'text-green-400'
+                          pwStrength.score <= 3 ? 'text-yellow-400' : 'gsc-auth-success'
                         }`}>{pwStrength.label}</p>
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-gray-200 text-sm font-medium">Confirm Password</Label>
+                    <Label className="gsc-auth-label text-sm font-medium">Confirm Password</Label>
                     <div className="relative">
                       <Input
                         type={showCpw ? 'text' : 'password'}
@@ -450,12 +445,12 @@ export default function ForgotPassword() {
                         className={`pr-10 ${inputCls} ${confirmPassword && newPassword === confirmPassword ? 'border-green-500' : ''}`}
                       />
                       <button type="button" onClick={() => setShowCpw(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                        className="absolute right-3 top-1/2 -translate-y-1/2 gsc-auth-muted hover:text-[var(--auth-ink)] transition-colors">
                         {showCpw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                     {confirmPassword && (
-                      <p className={`text-xs font-medium ${newPassword === confirmPassword ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className={`text-xs font-medium ${newPassword === confirmPassword ? 'gsc-auth-success' : 'text-red-400'}`}>
                         {newPassword === confirmPassword ? '✓ Passwords match' : '✗ Do not match'}
                       </p>
                     )}
@@ -465,14 +460,14 @@ export default function ForgotPassword() {
                     <Button
                       type="button"
                       onClick={() => setStep('code')}
-                      className="border border-gray-600 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white rounded-xl"
+                      className="border gsc-auth-border bg-transparent gsc-auth-label hover:bg-[var(--auth-inset)] hover:text-[var(--auth-ink)] rounded-md"
                     >
                       <ArrowLeft className="w-4 h-4 mr-1" /> Back
                     </Button>
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0 rounded-xl font-semibold gap-2"
+                      className="flex-1 gsc-auth-button hover:bg-[var(--auth-button-hover)] gsc-auth-ink border-0 rounded-md font-semibold gap-2"
                     >
                       {loading
                         ? <><Loader2 className="w-4 h-4 animate-spin" /> Resetting…</>
@@ -488,9 +483,9 @@ export default function ForgotPassword() {
         </div>
 
         {step !== 'success' && (
-          <p className="text-center text-xs text-gray-500 mt-4">
+          <p className="text-center text-xs gsc-auth-muted mt-4">
             Remember your password?{' '}
-            <button onClick={() => navigate('/user/login')} className="text-blue-400 hover:text-blue-300 underline font-medium transition-colors">
+            <button onClick={() => navigate('/user/login')} className="gsc-auth-link hover:text-blue-300 underline font-medium transition-colors">
               Sign in
             </button>
           </p>

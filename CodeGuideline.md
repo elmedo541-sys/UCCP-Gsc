@@ -118,3 +118,10 @@ Whenever a new module (such as a component, hook, or utility) or a new page is a
 - `frontend/src/router.tsx` renders it once above each member route; navigation stays visible during lazy loading.
 - Navigation styles are scoped under `.gsc-member-navigation` and `.gsc-member-route` in `frontend/src/index.css`.
 - The Feed uses this shared bar instead of its separate desktop shortcuts and mobile bottom tabs.
+
+
+## Shared Page Appearance
+
+- `frontend/src/PageStyles.css` contains styles scoped to member and administration pages, imported by `frontend/src/App.tsx`.
+- Events, Prayer Wall, Directory, Gallery and Member Profile retain full-width responsive layouts and use consistent cards, filter controls and accessible focus styles.
+- Gallery previews use keyboard-accessible buttons, separate from download and management actions.

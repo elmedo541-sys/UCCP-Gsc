@@ -92,7 +92,7 @@ export default function PrayerRequests() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="gsc-managed-page gsc-prayer-requests-page min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-3">
@@ -111,7 +111,7 @@ export default function PrayerRequests() {
       </header>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-12">
+      <div className="gsc-page-banner py-12">
         <div className="container mx-auto px-4 text-center">
           <Heart className="h-12 w-12 text-primary mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground mb-2">Community Prayer Wall</h2>
@@ -177,11 +177,11 @@ export default function PrayerRequests() {
             <p className="text-sm text-muted-foreground mt-1">Be the first to share a request</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="gsc-prayers-grid">
             {requests.map(r => (
               <div
                 key={r.id}
-                className={`bg-card border rounded-2xl p-5 transition-all ${
+                className={`gsc-prayer-card bg-card border rounded-2xl p-5 transition-all ${
                   r.is_answered
                     ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10'
                     : 'border-border hover:shadow-md'
@@ -196,7 +196,7 @@ export default function PrayerRequests() {
                       <span className="font-semibold text-foreground text-sm">{r.requester_name}</span>
                       <span className="text-xs text-muted-foreground">{timeAgo(r.created_at)}</span>
                     </div>
-                    <p className="text-foreground/90 text-sm leading-relaxed pl-10">{r.request}</p>
+                    <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap break-words">{r.request}</p>
                   </div>
                   {r.is_answered && (
                     <Badge className="bg-green-500/10 text-green-600 border-green-300 text-xs flex-shrink-0 gap-1">

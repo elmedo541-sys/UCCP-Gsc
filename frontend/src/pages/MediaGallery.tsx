@@ -28,7 +28,7 @@ export default function MediaGallery() {
   }, [isLoggedIn, personId]);
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="gsc-managed-page gsc-media-gallery-page min-h-screen bg-muted/30">
 
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">

@@ -28,14 +28,21 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 function formatEventDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 }
 
+function formatEventTime(value: string) {
+  const match = /^(\d{1,2}):(\d{2})/.exec(value);
+  if (!match) return value;
+  const hour = Number(match[1]);
+  return `${hour % 12 || 12}:${match[2]} ${hour >= 12 ? 'PM' : 'AM'}`;
+}
+
 function isUpcoming(dateStr: string) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  return new Date(dateStr) >= today;
+  return new Date(dateStr + 'T00:00:00') >= today;
 }
 
 export default function Events() {
@@ -71,7 +78,7 @@ export default function Events() {
     );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="gsc-managed-page gsc-events-page min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -88,7 +95,7 @@ export default function Events() {
       </header>
 
       {/* Hero Banner */}
-      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-12">
+      <div className="gsc-page-banner py-12">
         <div className="container mx-auto px-4 text-center">
           <Calendar className="h-12 w-12 text-primary mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground mb-2">Church Events</h2>
@@ -103,6 +110,7 @@ export default function Events() {
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            aria-label="Search events by title, description or location"
             placeholder="Search events…"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -116,6 +124,7 @@ export default function Events() {
             <button
               key={t}
               onClick={() => setTab(t)}
+              aria-pressed={tab === t}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all capitalize
                 ${tab === t
                   ? 'bg-primary text-primary-foreground shadow'
@@ -136,21 +145,21 @@ export default function Events() {
             <p className="text-muted-foreground font-medium">No {tab} events found</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="gsc-events-grid">
             {filtered.map(event => (
               <div
                 key={event.id}
-                className="bg-card border border-border rounded-2xl p-5 hover:shadow-md transition-all"
+                className="gsc-event-detail-card bg-card border border-border rounded-2xl p-5 hover:shadow-md transition-all"
               >
                 <div className="flex items-start justify-between gap-4">
                   {/* Date block */}
                   <div className="flex-shrink-0 w-14 text-center">
                     <div className="bg-primary/10 rounded-xl p-2">
                       <p className="text-xs font-semibold text-primary uppercase">
-                        {new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}
+                        {new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}
                       </p>
                       <p className="text-2xl font-bold text-primary leading-none">
-                        {new Date(event.event_date).getDate()}
+                        {new Date(event.event_date + 'T00:00:00').getDate()}
                       </p>
                     </div>
                   </div>
@@ -170,7 +179,7 @@ export default function Events() {
                     </div>
                     <h3 className="text-base font-bold text-foreground">{event.title}</h3>
                     {event.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{event.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap break-words">{event.description}</p>
                     )}
                     <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -180,7 +189,7 @@ export default function Events() {
                       {event.event_time && (
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {event.event_time}
+                          {formatEventTime(event.event_time)}
                         </span>
                       )}
                       {event.location && (

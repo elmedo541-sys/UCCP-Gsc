@@ -73,7 +73,7 @@ export default function MemberDirectory() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="gsc-managed-page gsc-member-directory-page min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
@@ -86,7 +86,7 @@ export default function MemberDirectory() {
       </header>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-12">
+      <div className="gsc-page-banner py-12">
         <div className="container mx-auto px-4 text-center">
           <Users className="h-12 w-12 text-primary mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-foreground mb-2">Our Members</h2>
@@ -98,10 +98,11 @@ export default function MemberDirectory() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-8 max-w-2xl">
+        <div className="gsc-page-filters flex flex-col sm:flex-row gap-3 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Search members by name"
               placeholder="Search by name…"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -109,7 +110,7 @@ export default function MemberDirectory() {
             />
           </div>
           <Select value={orgFilter} onValueChange={setOrgFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger aria-label="Filter members by organization" className="w-full sm:w-64">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -135,14 +136,14 @@ export default function MemberDirectory() {
             <p className="text-muted-foreground font-medium">No members found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="gsc-directory-grid">
             {filtered.map(member => {
               const avatarGradient = ORG_AVATAR[member.organization ?? ''] ?? 'from-slate-400 to-slate-600';
               const pictureUrl = getProfilePictureUrl(member.profile_picture);
               return (
                 <div
                   key={member.uuid}
-                  className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center hover:shadow-md transition-all"
+                  className="gsc-member-detail-card bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center hover:shadow-md transition-all"
                 >
                   {/* Avatar */}
                   <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${avatarGradient} flex items-center justify-center mb-3 overflow-hidden shadow`}>
@@ -159,7 +160,7 @@ export default function MemberDirectory() {
                     )}
                   </div>
 
-                  <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2">
+                  <p className="text-sm font-semibold text-foreground leading-tight break-words">
                     {member.full_name}
                   </p>
 

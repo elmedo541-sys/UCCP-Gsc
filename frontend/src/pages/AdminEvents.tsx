@@ -157,10 +157,10 @@ export default function AdminEvents() {
     return formatDate(dateStr);
   }
 
-  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="animate-spin" /></div>;
+  if (authLoading) return <div className="gsc-managed-page gsc-admin-events-page min-h-screen flex items-center justify-center bg-background"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="gsc-managed-page gsc-admin-events-page min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">

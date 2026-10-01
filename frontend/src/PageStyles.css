@@ -1,0 +1,56 @@
+/* Shared visual language for the remaining member and administration pages. */
+.gsc-page-layout .gsc-managed-page{background:#faf9f6;color:hsl(var(--foreground));line-height:1.65}
+.dark .gsc-page-layout .gsc-managed-page{background:hsl(var(--background))}
+.gsc-managed-page>header{background:hsl(var(--card));box-shadow:none;border-bottom:1px solid hsl(var(--border))}
+.gsc-page-layout .gsc-managed-page h1{font-size:28px;line-height:1.3;font-weight:600}
+.gsc-page-layout .gsc-managed-page h2{font:400 34px/1.25 Georgia,'Times New Roman',serif}
+.gsc-managed-page h3{line-height:1.4}
+.gsc-managed-page :is(main,.container){padding-inline:clamp(16px,2.5vw,48px)}
+.gsc-managed-page .gsc-page-banner{background:#193044;color:#fff;padding-block:36px;border-bottom:4px solid #b89752}
+.gsc-page-banner>.container{text-align:left;display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px 24px;align-items:center}
+.gsc-page-banner>.container>svg{grid-row:1 / 3;margin:0;color:#dfc78d}
+.gsc-page-banner>.container>h2{margin:0;color:#fff}
+.gsc-page-banner>.container>p{grid-column:2;color:#dce4e7;margin:0;max-width:none;font-size:17px}
+.gsc-managed-page :is(.bg-card.border,[role=tabpanel]>.border){border-radius:10px;box-shadow:0 2px 8px #19304405}
+.gsc-managed-page :is(button,input,textarea,[role=combobox]){border-radius:6px}
+.gsc-managed-page button{min-height:44px}
+.gsc-managed-page :is(button,a,input,textarea):focus-visible,.gsc-gallery-panel :is(button,a):focus-visible{outline:3px solid #b89752;outline-offset:3px}
+.gsc-page-filters{padding:22px;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:10px;max-width:none}
+.gsc-events-grid,.gsc-prayers-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+.gsc-events-grid .gsc-event-detail-card,.gsc-prayers-grid .gsc-prayer-card{padding:28px;margin:0;min-width:0}
+.gsc-event-detail-card h3{font-size:22px;font-weight:600;margin-top:12px}
+.gsc-prayer-card p{font-size:17px;line-height:1.8}
+.gsc-directory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:24px}
+.gsc-directory-grid .gsc-member-detail-card{padding:30px 22px;min-width:0;border-top:3px solid #b89752}
+.gsc-member-detail-card>div:first-child{width:88px;height:88px;margin-bottom:20px}
+.gsc-member-detail-card>p:first-of-type{font-size:19px;line-height:1.4}
+.gsc-profile-form{display:flex;flex-direction:column;gap:24px}
+.gsc-profile-form>*{margin-top:0!important;min-width:0}
+.gsc-profile-form>.border{padding:26px;background:hsl(var(--card));border-radius:10px;border-top:3px solid #b89752}
+.gsc-profile-form>.border:first-child>div.flex{flex-direction:row;align-items:center;gap:32px;flex-wrap:wrap}
+.gsc-user-profile-page [role=tablist]{height:auto;min-height:52px;padding:6px;gap:8px;flex-wrap:wrap}
+.gsc-user-profile-page [role=tab]{padding:12px 18px;min-height:44px}
+.gsc-managed-page table{font-size:16px}
+.gsc-managed-page thead{background:hsl(var(--muted))}
+.gsc-managed-page :is(th,td){padding:16px 18px;line-height:1.5}
+.gsc-managed-page th{font-size:14px;color:hsl(var(--foreground));font-weight:600;white-space:nowrap}
+.gsc-managed-page tbody tr:hover{background:hsl(var(--muted)/.45)}
+.gsc-managed-page td:last-child button{min-width:40px;min-height:40px}
+.gsc-managed-page main>div.flex.items-center.justify-between{flex-wrap:wrap;gap:20px}
+.gsc-admin-dashboard-page [class*="grid-cols-6"]{gap:18px}
+.gsc-admin-dashboard-page main>div:first-child{padding-bottom:20px;border-bottom:1px solid hsl(var(--border))}
+.gsc-gallery-panel{padding-block:8px}
+.gsc-gallery-panel>div:first-child{padding:20px;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:10px;gap:20px}
+.gsc-gallery-panel>div:first-child button{min-height:44px;border-radius:6px;font-size:15px;padding-inline:16px}
+.gsc-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px}
+.gsc-gallery-grid>div{border-radius:10px;min-width:0}
+.gsc-gallery-preview{display:block;width:100%;height:100%;padding:0;cursor:pointer}
+.gsc-gallery-preview:focus-visible{outline-offset:-4px!important}
+.gsc-gallery-actions{opacity:1!important;gap:8px!important}
+.gsc-gallery-actions button{width:40px;height:40px;min-height:40px;border-radius:6px}
+.gsc-gallery-caption{padding:40px 16px 16px}
+.gsc-gallery-caption p{font-size:16px;line-height:1.4}
+.gsc-gallery-panel [class*="text-[10px]"]{font-size:13px;line-height:1.5}
+@media(min-width:1300px){.gsc-events-grid,.gsc-prayers-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gsc-page-layout .gsc-managed-page h1{font-size:23px}.gsc-page-layout .gsc-managed-page h2{font-size:28px}.gsc-page-banner>.container{grid-template-columns:minmax(0,1fr);gap:12px}.gsc-page-banner>.container>svg{display:none}.gsc-page-banner>.container>p{grid-column:1;font-size:16px}.gsc-events-grid .gsc-event-detail-card,.gsc-prayers-grid .gsc-prayer-card{padding:20px}.gsc-directory-grid,.gsc-gallery-grid{grid-template-columns:minmax(0,1fr);gap:18px}.gsc-profile-form>.border{padding:18px}.gsc-page-filters{padding:16px}.gsc-managed-page :is(th,td){padding:12px}.gsc-gallery-panel>div:first-child{padding:14px}.gsc-user-profile-page>div>div.flex.items-center.justify-between{flex-wrap:wrap;gap:16px}}
+@media(prefers-reduced-motion:reduce){.gsc-managed-page *,.gsc-gallery-panel *{animation:none!important;transition:none!important}}

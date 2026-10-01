@@ -247,7 +247,7 @@ export default function UserProfile() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="gsc-managed-page gsc-user-profile-page min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -258,7 +258,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+    <div className="gsc-managed-page gsc-user-profile-page min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
       <div className="max-w-3xl mx-auto my-8 space-y-4">
 
         {/* ── Top header ── */}
@@ -303,7 +303,7 @@ export default function UserProfile() {
                 <CardDescription>Edit your personal information</CardDescription>
               </CardHeader>
               <CardContent>
-            <form onSubmit={handleUpdate} className="space-y-4">
+            <form onSubmit={handleUpdate} className="gsc-profile-form space-y-4">
               {/* Profile Picture Upload Section */}
               <div className="border rounded-lg p-4 bg-muted/20">
                 <h3 className="text-lg font-semibold mb-3">Profile Picture</h3>

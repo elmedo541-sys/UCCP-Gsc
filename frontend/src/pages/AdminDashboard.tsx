@@ -442,7 +442,7 @@ export default function AdminDashboard() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="gsc-managed-page gsc-admin-dashboard-page min-h-screen flex items-center justify-center bg-muted/30">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <p className="text-muted-foreground text-sm">Loading dashboard...</p>
@@ -454,7 +454,7 @@ export default function AdminDashboard() {
   const roleLabel = role === 'super_admin' ? 'Super Admin' : role === 'editor' ? 'Editor' : 'Viewer';
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="gsc-managed-page gsc-admin-dashboard-page min-h-screen bg-muted/30">
 
       {/* ── Top Navigation Bar ── */}
       <header className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
